@@ -1,89 +1,80 @@
 <p align="center">
-  <img src="docs/logo.png" alt="Kast Logo" width="128" height="128" />
+  <img src="docs/logo.png" width="160" alt="Kast Logo">
 </p>
 
 <h1 align="center">Kast</h1>
 
 <p align="center">
-  App Android para descubrir películas y series, y enviarlas a una TV compatible.
+  Discover movies and TV shows and send them directly to your LG webOS TV.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-8.0+-3DDC84?logo=android&logoColor=white" alt="Android">
+  <img src="https://img.shields.io/badge/Kotlin-2.x-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin">
+  <img src="https://img.shields.io/badge/Jetpack%20Compose-Material3-4285F4" alt="Jetpack Compose">
+  <img src="https://img.shields.io/badge/License-MIT-lightgrey" alt="License">
+</p>
+
+<p align="center">
+  <a href="../../releases/latest">
+    <img src="https://img.shields.io/badge/Download-APK-success?style=for-the-badge&logo=android" alt="Download APK">
+  </a>
 </p>
 
 ---
 
-## Acerca de
+## About
 
-Kast permite buscar películas y series usando TMDB, organizar favoritos e historial, y enviar contenido directamente a una TV LG webOS desde el celular. La app no aloja contenido multimedia ni distribuye archivos de video.
+Kast is an Android app that lets you browse movies and TV shows using TMDB, save favorites and watch history locally, and send content directly to an LG webOS TV on your home network. Kast does not host or distribute any media files.
 
-## Capturas
+## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/home.png" alt="Home" width="250" />
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/movie-detail.png" alt="Detalle" width="250" />
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/tv-settings.png" alt="Configuración TV" width="250" />
+  <img src="docs/screenshots/home.png" width="220" alt="Home">
+  <img src="docs/screenshots/movie-detail.png" width="220" alt="Movie Detail">
+  <img src="docs/screenshots/tv-settings.png" width="220" alt="TV Settings">
 </p>
 
 ## Features
 
-- **Películas y series** — Tendencias, estrenos, mejor valoradas, series populares
-- **Búsqueda unificada** — Busca películas y series en una sola barra
-- **Detalle completo** — Póster, sinopsis, calificación, año, géneros
-- **Series** — Temporadas, episodios con selección
-- **Favoritos** — Guarda películas favoritas localmente
-- **Historial** — Registra lo que viste y lo que enviaste a la TV
-- **Discovery de TVs** — Encuentra TVs LG automáticamente en la red
-- **Envío a TV** — Envía películas a una TV LG webOS mediante WSS + SSAP
-- **Skeleton loaders** — Carga visual suave
-- **Tema oscuro** — Diseño minimalista en negro/gris/blanco
+- **Movies & TV Shows** — Trending, now playing, top rated, popular series
+- **Unified Search** — Search movies and shows in a single bar
+- **Full Details** — Poster, synopsis, rating, year, genres
+- **Series** — Seasons and episodes with selection
+- **Favorites** — Save favorite movies locally
+- **History** — Track what you watched and sent to TV
+- **TV Discovery** — Automatically find LG TVs on your local network
+- **Send to TV** — Send movies to an LG webOS TV via WSS + SSAP
+- **Skeleton Loaders** — Smooth loading animations
+- **Dark Theme** — Minimalist design in black, grey, and white
+
+## Download
+
+Download the latest APK from GitHub Releases:
+
+[**Download APK**](../../releases/latest)
+
+> The APK will be available from GitHub Releases once the first public release is published.
 
 ## Tech Stack
 
-| Capa | Tecnología |
-|------|-----------|
-| Lenguaje | Kotlin |
+| Layer | Technology |
+|-------|-----------|
+| Language | Kotlin |
 | UI | Jetpack Compose + Material 3 |
 | Networking | Retrofit + OkHttp |
-| Imágenes | Coil |
-| Persistencia | Room |
+| Images | Coil |
+| Persistence | Room + DataStore |
 | TMDB | API v4 (Read Access Token) |
-| TV | WebSocket + protocolo SSAP |
+| TV | WebSocket + SSAP protocol |
 | Discovery | UDP multicast (SSDP) |
 
-## Arquitectura
+## Setup
 
-```
-app/src/main/java/com/kastlg/app/
-├── data/
-│   ├── local/        # Room: entities, DAOs, database
-│   ├── remote/       # TMDB API: Retrofit, DTOs, token store
-│   ├── repository/   # Repository implementations
-│   └── tv/           # SSAP client + discovery (UDP multicast)
-├── di/               # AppContainer (dependency injection)
-├── domain/
-│   ├── models/       # Domain models
-│   ├── repositories/ # Repository interfaces
-│   └── usecases/     # Use cases
-└── presentation/
-    ├── about/        # Acerca de
-    ├── detail/       # Detalle de película
-    ├── tvdetail/     # Detalle de serie
-    ├── favorites/    # Favoritos
-    ├── history/      # Historial
-    ├── home/         # Home (carruseles + búsqueda)
-    ├── library/      # Componentes compartidos
-    ├── navigation/   # Rutas y destinos
-    ├── settings/     # Configuración TMDB + TV
-    ├── theme/        # Colores, tipografía, tema
-    └── tvsettings/   # Configuración TV + discovery
-```
-
-## Instalación
-
-### Requisitos
+### Prerequisites
 
 - Android SDK Platform 35
-- JDK 17+ (el wrapper lo detecta automáticamente)
+- JDK 17+ (the wrapper detects it automatically)
 
 ### Build
 
@@ -91,63 +82,59 @@ app/src/main/java/com/kastlg/app/
 .\gradlew.bat :app:assembleDebug --console=plain
 ```
 
-### Instalar en dispositivo
+### Install on device
 
 ```bash
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## Download
+## Configure TMDB
 
-[Descargar última versión](../../releases/latest)
+1. Create an account at [themoviedb.org](https://www.themoviedb.org/)
+2. Generate an **API Read Access Token** (v4) at Settings > API
+3. Open the app → **Settings** tab → paste the token
 
-## Configurar TMDB
+The app compiles without a token and shows a button to configure it.
 
-1. Creá una cuenta en [themoviedb.org](https://www.themoviedb.org/)
-2. Generá un **API Read Access Token** (v4) en Settings > API
-3. Abrí la app → pestaña **Ajustes** → pegá el token
+## Configure LG TV
 
-La app compila sin token y muestra un botón para configurarlo.
+1. TV and phone must be on the **same WiFi network**
+2. Go to the **TV** tab in the app
+3. Press **Search for TVs** or enter the IP manually
+4. Select the TV and press **Connect**
+5. Accept the permission prompt on the TV screen
+6. From any movie, press **Watch on TV**
 
-## Configurar TV LG
+## Development
 
-1. La TV y el celular deben estar en la **misma red WiFi**
-2. Ir a la pestaña **TV** en la app
-3. Presioná **Buscar TVs** o ingresá la IP manualmente
-4. Seleccioná la TV y presioná **Conectar**
-5. Aceptá el permiso en la pantalla de la TV
-6. Desde cualquier película, presioná **Ver en TV**
-
-## Desarrollo
-
-### Ejecutar tests
+### Run tests
 
 ```bash
 .\gradlew.bat clean :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --console=plain
 ```
 
-### Estructura de tests
+- Unit tests with fakes and Robolectric
+- No TMDB token or device required
+- Room tests with in-memory database
 
-- Unit tests con fakes y Robolectric
-- No requieren token de TMDB ni dispositivo conectado
-- Room tests con base de datos en memoria
+### Architecture
 
-## Créditos
+```
+app/src/main/java/com/kastlg/app/
+├── data/           # Room, Retrofit, DTOs, SSAP client, discovery
+├── di/             # AppContainer (dependency injection)
+├── domain/         # Models, repositories, use cases
+└── presentation/   # Compose screens, ViewModels, theme
+```
 
-- **Películas y series**: [TMDB](https://www.themoviedb.org/)
-- **Reproducción**: [UnlimPlay](https://unlimplay.com/)
-- **TV compatible**: LG webOS (WSS + SSAP)
+## Credits
 
-Kast utiliza TMDB para mostrar información de películas y series. La reproducción se realiza mediante UnlimPlay. Kast no aloja contenido multimedia ni distribuye archivos de video.
+- **Movies & TV Shows**: [TMDB](https://www.themoviedb.org/)
+- **Playback**: [UnlimPlay](https://unlimplay.com/)
+- **Compatible TV**: LG webOS (WSS + SSAP)
 
-## Limitaciones
+> Kast uses TMDB to display movie and show information. Playback is provided through UnlimPlay. Kast does not host, stream, or distribute any media content.
 
-- Solo funciona en orientación vertical
-- Búsqueda limitada a la primera página de resultados de TMDB
-- El historial registra contenido visto, no reproducción real
-- Requiere TV LG webOS en la misma red WiFi
-- El pairing requiere aceptar un prompt en la TV la primera vez
+## License
 
-## Licencia
-
-MIT License — ver [LICENSE](LICENSE)
+[MIT License](LICENSE)

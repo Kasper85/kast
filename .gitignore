@@ -1,0 +1,16 @@
+*.iml
+.gradle/
+/.kotlin/
+/local.properties
+/.idea/
+/.atl/
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+/app/build/
+*.jks
+*.keystore
+keystore.properties
+*.apk
+google-services.json

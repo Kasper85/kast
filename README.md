@@ -2,7 +2,7 @@
   <img src="docs/logo.png" width="160" alt="Kast Logo">
 </p>
 
-<h1 align="center">Kast</h1>
+<h1 align="center">Kast — App Android para TVs LG webOS</h1>
 
 <p align="center">
   Aplicación Android para descubrir películas y series, y enviarlas directamente a tu TV LG webOS.
@@ -23,28 +23,33 @@
 
 ---
 
+Kast es una aplicación Android de código abierto que permite descubrir películas y series mediante [TMDB](https://www.themoviedb.org/) y enviarlas directamente a televisores LG webOS usando el protocolo nativo SSAP. No requiere cuenta, no requiere backend, y no aloja contenido multimedia.
+
+---
+
 ## ¿Qué es Kast?
 
-Kast es una aplicación Android de código abierto que te permite buscar películas y series usando [TMDB](https://www.themoviedb.org/), guardar favoritos e historial localmente, y enviar contenido directamente a una TV LG webOS desde tu celular mediante el protocolo SSAP sobre WebSocket.
+Kast es una app Android pensada para usuarios que tienen una TV LG webOS en casa y quieren buscar películas o series desde su celular y enviarlas a la TV de forma rápida. Usa TMDB para obtener la información de películas y series, y se comunica con la TV mediante el protocolo SSAP sobre WebSocket (WSS).
+
+No necesitás cuenta, login ni servidor multimedia. Todo funciona de forma local: la app busca en TMDB, guarda favoritos e historial en tu celular, y envía la URL de reproducción a tu TV LG webOS.
 
 Kast no aloja, transmite ni distribuye ningún contenido multimedia. Los metadatos provienen de TMDB y la reproducción se realiza a través de [UnlimPlay](https://unlimplay.com/).
 
-### ¿Para quién está pensado?
+## ¿Por qué existe Kast?
 
-- Personas que tienen una TV LG webOS en casa
-- Usuarios de Android que quieren controlar su TV desde el celular
-- Quienes buscan una alternativa a la app ThinQ de LG o a Web Video Caster
-- Desarrolladores interesados en el protocolo SSAP de LG webOS
+Las soluciones existentes para controlar TVs LG webOS suelen depender de DLNA, Chromecast, servidores multimedia (como Plex o Kodi) o aplicaciones propietarias como LG ThinQ. Muchas de estas alternativas requieren configuración compleja, cuentas, o no están diseñadas específicamente para el flujo de buscar → ver → enviar a TV.
 
-### ¿Cómo funciona?
+Kast está pensado para usuarios Android que quieren un camino directo: buscan una película o serie, la revisan, y la envían a su TV LG webOS con un toque. No requiere cuenta, no requiere backend, no requiere servidor multimedia. Usa TMDB para los metadatos y SSAP para comunicarse con la TV, manteniendo la experiencia simple y local.
 
-1. **Busca** películas y series usando TMDB
-2. **Guarda** favoritos e historial en tu celular (Room)
-3. **Conecta** tu TV LG webOS desde la app
-4. **Envía** la película o serie a tu TV con un toque
-5. **Tu TV abre** automáticamente el navegador con la reproducción
+## Casos de uso
 
-No necesitas cuenta, login ni backend. Todo funciona localmente en tu dispositivo.
+- Enviar películas a una TV LG desde Android
+- Ver series en una TV LG webOS
+- Controlar una TV LG desde el celular
+- Buscar películas y series con TMDB
+- Usar una alternativa ligera a Web Video Caster para LG
+- Usar una alternativa técnica a LG ThinQ para reproducción
+- Probar una app open source para LG webOS
 
 ---
 
@@ -127,6 +132,45 @@ La app compila sin token y muestra un botón para configurarlo.
 
 La configuración (IP y client key) se guardan localmente.
 
+---
+
+## Kast vs alternativas
+
+| | Kast | Web Video Caster | LG ThinQ |
+|---|------|-----------------|----------|
+| Open source | ✅ MIT | ❌ | ❌ |
+| Sin cuenta | ✅ | ✅ | ❌ |
+| Enfocado en LG webOS | ✅ | ❌ Multiplataforma | ✅ |
+| TMDB integrado | ✅ | ❌ | ❌ |
+| Favoritos e historial | ✅ | ❌ | ❌ |
+| Temporadas y episodios | ✅ | ❌ | ❌ |
+| Usa SSAP nativo | ✅ | ❌ DLNA | ✅ |
+
+Para una comparación más amplia con Kodi, Plex, Jellyfin y otras herramientas, revisa [COMPARISON.md](COMPARISON.md).
+
+---
+
+## Preguntas frecuentes
+
+**¿Kast funciona con cualquier TV?**
+No. Kast solo funciona con TVs LG que ejecuten webOS y soporten el protocolo SSAP. La mayoría de las TVs LG de 2014 en adelante son compatibles.
+
+**¿Necesito una cuenta?**
+No. Kast funciona sin cuenta, login ni registro. Solo necesitás un token de TMDB (gratuito).
+
+**¿Kast almacena películas o series?**
+No. Kast es solo un navegador de metadatos (TMDB) y un controlador remoto. No almacena, transmite ni distribuye contenido multimedia.
+
+**¿Necesito un token de TMDB?**
+Sí. TMDB es la fuente de datos. Necesitás un API Read Access Token v4, que es gratuito y se configura desde la app.
+
+**¿Kast funciona con Chromecast o Samsung TV?**
+No. Kast usa el protocolo SSAP nativo de LG webOS. No compatible con Chromecast, Samsung, Sony, ni otros fabricantes.
+
+Para más preguntas, revisa [FAQ.md](FAQ.md).
+
+---
+
 ## Desarrollo
 
 ### Ejecutar tests
@@ -148,14 +192,6 @@ app/src/main/java/com/kastlg/app/
 ├── domain/         # Models, repositories, use cases
 └── presentation/   # Compose screens, ViewModels, theme
 ```
-
-## Comparativas
-
-Ver [COMPARISON.md](COMPARISON.md) para una comparación detallada con alternativas como Web Video Caster, LG ThinQ, Kodi y Plex.
-
-## Preguntas frecuentes
-
-Ver [FAQ.md](FAQ.md) para respuestas a las preguntas más comunes.
 
 ## Créditos
 

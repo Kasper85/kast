@@ -1,0 +1,55 @@
+# Kast — Android app for LG webOS TV control
+
+Kast is an open-source Android application written in Kotlin that allows users to discover movies and TV shows using the TMDB API, save favorites and watch history locally using Room database, and send content directly to an LG webOS TV on the same WiFi network using the SSAP protocol over WebSocket (WSS).
+
+## Technologies
+- Kotlin 2.x with Jetpack Compose and Material 3
+- Retrofit + OkHttp for TMDB API communication
+- Coil for image loading
+- Room + DataStore for local persistence
+- OkHttp WebSocket for LG webOS SSAP protocol
+- UDP multicast (SSDP) for automatic TV discovery
+- TMDB API v4 with Read Access Token
+
+## Compatibility
+- Android 8.0+ (API 26)
+- LG webOS TVs (any model with SSAP support)
+- Requires same WiFi network for TV features
+- TMDB API token required (configurable in-app)
+
+## Use cases
+- Browse and search movies and TV shows via TMDB
+- View movie/show details with poster, synopsis, rating, genres, seasons, episodes
+- Save favorites and watch history locally
+- Automatically discover LG TVs on local network via SSDP
+- Send movies/shows to LG webOS TV via SSAP protocol over WSS
+- The TV opens the content automatically in its browser
+
+## Limitations
+- Only works in portrait orientation
+- Search limited to first page of TMDB results
+- No infinite scrolling
+- History tracks viewed content and TV sends, not actual playback
+- SSAP protocol is not officially documented by LG
+- TV and phone must be on the same WiFi network
+- Pairing requires accepting a prompt on the TV the first time
+- Does not support Chromecast, Samsung TV, Android TV, or Fire TV
+
+## FAQ
+Q: What is Kast?
+A: Kast is an open-source Android app for discovering movies/series via TMDB and sending them to LG webOS TVs.
+
+Q: Is Kast free?
+A: Yes, it's open source under the MIT license.
+
+Q: Does Kast work with any TV?
+A: Only with LG TVs running webOS that support the SSAP protocol.
+
+Q: Do I need an account?
+A: No. Kast works locally. You only need a TMDB API token (free).
+
+Q: Does Kast store my data?
+A: Only locally on your device using Room database. No backend, no cloud.
+
+Q: Can I use Kast without a TV?
+A: Yes. You can browse, search, and save favorites. TV features are optional.

@@ -33,6 +33,8 @@ import com.kastlg.app.presentation.history.HistoryRoute
 import com.kastlg.app.presentation.home.HomeRoute
 import com.kastlg.app.presentation.navigation.AppDestination
 import com.kastlg.app.presentation.navigation.DetailRoutes
+import com.kastlg.app.presentation.navigation.FlixcornEpisodeRoutes
+import com.kastlg.app.presentation.navigation.FlixcornSeriesDetailRoutes
 import com.kastlg.app.presentation.navigation.TvSettingsRoutes
 import com.kastlg.app.presentation.navigation.TvShowDetailRoutes
 import com.kastlg.app.presentation.settings.SettingsRoute
@@ -53,7 +55,8 @@ fun KastLgApp() {
 
     val isTabDestination = currentDestination?.route in AppDestination.entries.map { it.route }
     val isDetailScreen = currentDestination?.route?.startsWith("detail/") == true ||
-        currentDestination?.route?.startsWith("tvshow/") == true
+        currentDestination?.route?.startsWith("tvshow/") == true ||
+        currentDestination?.route?.startsWith("flixcorn/") == true
     val isAboutScreen = currentDestination?.route == AppDestination.About.route
     val showBottomBar = isTabDestination || isDetailScreen || isAboutScreen
 
@@ -110,6 +113,9 @@ fun KastLgApp() {
                     },
                     onTvShowClick = { tvShowId ->
                         navController.navigate(TvShowDetailRoutes.create(tvShowId))
+                    },
+                    onFlixcornSeriesClick = { slug ->
+                        navController.navigate(FlixcornSeriesDetailRoutes.create(slug))
                     },
                     onConfigureToken = {
                         navController.navigate(AppDestination.Settings.route) {
@@ -233,6 +239,39 @@ fun KastLgApp() {
                     onSeasonSelected = { seasonNumber -> viewModel.selectSeason(seasonNumber) },
                     onEpisodeSelected = { episode -> viewModel.selectEpisode(episode) },
                     viewModel = viewModel,
+                )
+            }
+            composable(
+                route = FlixcornSeriesDetailRoutes.BASE,
+                arguments = listOf(navArgument("slug") { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val slug = backStackEntry.arguments?.getString("slug") ?: return@composable
+                com.kastlg.app.presentation.flixcorn.                FlixcornSeriesDetailRoute(
+                    slug = slug,
+                    onBack = { navController.popBackStack() },
+                    onEpisodeClick = { s, e ->
+                        navController.navigate(
+                            FlixcornEpisodeRoutes.create(slug, s, e),
+                        )
+                    },
+                )
+            }
+            composable(
+                route = FlixcornEpisodeRoutes.BASE,
+                arguments = listOf(
+                    navArgument("slug") { type = NavType.StringType },
+                    navArgument("season") { type = NavType.IntType },
+                    navArgument("episode") { type = NavType.IntType },
+                ),
+            ) { backStackEntry ->
+                val slug = backStackEntry.arguments?.getString("slug") ?: return@composable
+                val season = backStackEntry.arguments?.getInt("season") ?: return@composable
+                val episode = backStackEntry.arguments?.getInt("episode") ?: return@composable
+                com.kastlg.app.presentation.flixcorn.FlixcornEpisodeRoute(
+                    slug = slug,
+                    season = season,
+                    episode = episode,
+                    onBack = { navController.popBackStack() },
                 )
             }
         }

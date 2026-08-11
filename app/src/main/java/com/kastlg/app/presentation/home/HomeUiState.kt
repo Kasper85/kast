@@ -1,5 +1,6 @@
 package com.kastlg.app.presentation.home
 
+import com.kastlg.app.data.remote.flixcorn.FlixcornSearchResult
 import com.kastlg.app.domain.models.Genre
 import com.kastlg.app.domain.models.Movie
 import com.kastlg.app.domain.models.TvShow
@@ -19,6 +20,8 @@ data class HomeUiState(
     val popularTvShows: List<TvShow> = emptyList(),
     val searchResults: List<Movie> = emptyList(),
     val searchTvResults: List<TvShow> = emptyList(),
+    val flixcornResults: List<FlixcornSearchResult> = emptyList(),
+    val flixcornSearchLoading: Boolean = false,
     val selectedMovieGenreId: Int? = null,
     val selectedTvGenreId: Int? = null,
     val movieGenres: List<Genre> = emptyList(),
@@ -28,5 +31,5 @@ data class HomeUiState(
     val isSearchMode: Boolean get() = searchQuery.isNotBlank()
     val hasContent: Boolean get() = trendingMovies.isNotEmpty() || nowPlayingMovies.isNotEmpty() ||
         topRatedMovies.isNotEmpty() || popularTvShows.isNotEmpty()
-    val hasSearchResults: Boolean get() = searchResults.isNotEmpty() || searchTvResults.isNotEmpty()
+    val hasSearchResults: Boolean get() = searchResults.isNotEmpty() || searchTvResults.isNotEmpty() || flixcornResults.isNotEmpty()
 }

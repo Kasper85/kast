@@ -33,3 +33,13 @@ object TvShowDetailRoutes {
 object TvSettingsRoutes {
     const val BASE = "tv-settings"
 }
+
+object FlixcornSeriesDetailRoutes {
+    const val BASE = "flixcorn/{slug}"
+    fun create(slug: String) = "flixcorn/$slug"
+}
+
+object FlixcornEpisodeRoutes {
+    const val BASE = "flixcorn/{slug}/season/{season}/episode/{episode}"
+    fun create(slug: String, season: Int, episode: Int) = "flixcorn/$slug/season/$season/episode/$episode"
+}

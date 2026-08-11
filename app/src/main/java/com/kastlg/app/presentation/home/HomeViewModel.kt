@@ -2,6 +2,7 @@ package com.kastlg.app.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kastlg.app.data.remote.flixcorn.FlixcornResult
 import com.kastlg.app.domain.models.Movie
 import com.kastlg.app.domain.models.TvShow
 import com.kastlg.app.domain.repositories.MissingTmdbTokenException
@@ -11,6 +12,7 @@ import com.kastlg.app.domain.usecases.GetPopularTvShowsUseCase
 import com.kastlg.app.domain.usecases.GetTopRatedMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTrendingMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTvGenresUseCase
+import com.kastlg.app.domain.usecases.SearchFlixcornUseCase
 import com.kastlg.app.domain.usecases.SearchMoviesUseCase
 import com.kastlg.app.domain.usecases.SearchTvShowsUseCase
 import java.io.IOException
@@ -33,6 +35,7 @@ class HomeViewModel(
     private val searchTvShows: SearchTvShowsUseCase,
     private val getMovieGenres: GetMovieGenresUseCase,
     private val getTvGenres: GetTvGenresUseCase,
+    private val searchFlixcorn: SearchFlixcornUseCase,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = mutableUiState
@@ -190,18 +193,28 @@ class HomeViewModel(
                     topRatedMovies = emptyList(),
                     popularTvShows = emptyList(),
                     errorMessage = null,
+                    flixcornResults = emptyList(),
+                    flixcornSearchLoading = true,
                 )
             }
 
             try {
                 val movies = async { searchMovies(query) }
                 val tvShows = async { searchTvShows(query) }
+                val flixcorn = async {
+                    when (val result = searchFlixcorn(query)) {
+                        is FlixcornResult.Success -> result.data
+                        else -> emptyList()
+                    }
+                }
 
                 mutableUiState.update {
                     it.copy(
                         searchResults = movies.await(),
                         searchTvResults = tvShows.await(),
+                        flixcornResults = flixcorn.await(),
                         isLoading = false,
+                        flixcornSearchLoading = false,
                     )
                 }
             } catch (e: CancellationException) {
@@ -210,6 +223,7 @@ class HomeViewModel(
                 mutableUiState.update {
                     it.copy(
                         isLoading = false,
+                        flixcornSearchLoading = false,
                         errorMessage = e.toActionableMessage(),
                     )
                 }

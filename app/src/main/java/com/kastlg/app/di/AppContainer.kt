@@ -5,12 +5,17 @@ import com.kastlg.app.BuildConfig
 import com.kastlg.app.data.local.KastLgDatabase
 import com.kastlg.app.data.remote.TmdbNetwork
 import com.kastlg.app.data.remote.TmdbTokenStore
+import com.kastlg.app.data.remote.flixcorn.FlixcornScraper
+import com.kastlg.app.data.repository.FlixcornRepositoryImpl
 import com.kastlg.app.data.repository.RoomFavoriteRepository
 import com.kastlg.app.data.repository.RoomHistoryRepository
 import com.kastlg.app.data.repository.WebOsTvRepository
 import com.kastlg.app.data.tv.SsapClient
+import com.kastlg.app.domain.repositories.FlixcornRepository
 import com.kastlg.app.domain.repositories.MovieRepository
 import com.kastlg.app.domain.usecases.DiscoverMoviesUseCase
+import com.kastlg.app.domain.usecases.GetFlixcornEpisodeServers
+import com.kastlg.app.domain.usecases.GetFlixcornSeriesDetail
 import com.kastlg.app.domain.usecases.GetMovieDetailUseCase
 import com.kastlg.app.domain.usecases.GetMovieGenresUseCase
 import com.kastlg.app.domain.usecases.GetNowPlayingMoviesUseCase
@@ -20,8 +25,10 @@ import com.kastlg.app.domain.usecases.GetTrendingMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTvGenresUseCase
 import com.kastlg.app.domain.usecases.GetTvSeasonUseCase
 import com.kastlg.app.domain.usecases.GetTvShowDetailUseCase
+import com.kastlg.app.domain.usecases.SearchFlixcornUseCase
 import com.kastlg.app.domain.usecases.SearchMoviesUseCase
 import com.kastlg.app.domain.usecases.SearchTvShowsUseCase
+import com.kastlg.app.domain.usecases.SendFlixcornToTvUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -55,6 +62,21 @@ object AppContainer {
     val tvRepository by lazy {
         WebOsTvRepository(database.tvConfigDao(), ssapClient)
     }
+
+    private val flixcornScraper by lazy { FlixcornScraper() }
+
+    val flixcornRepository: FlixcornRepository by lazy {
+        FlixcornRepositoryImpl(
+            scraper = flixcornScraper,
+            seriesDao = database.flixcornSeriesDao(),
+            episodeCacheDao = database.flixcornEpisodeCacheDao(),
+        )
+    }
+
+    val searchFlixcorn by lazy { SearchFlixcornUseCase(flixcornRepository) }
+    val getFlixcornSeriesDetail by lazy { GetFlixcornSeriesDetail(flixcornRepository) }
+    val getFlixcornEpisodeServers by lazy { GetFlixcornEpisodeServers(flixcornRepository) }
+    val sendFlixcornToTv by lazy { SendFlixcornToTvUseCase(flixcornRepository) }
 
     private val _hasToken = MutableStateFlow(false)
     val hasToken: StateFlow<Boolean> = _hasToken

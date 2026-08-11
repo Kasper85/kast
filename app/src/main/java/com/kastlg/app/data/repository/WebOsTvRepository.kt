@@ -140,6 +140,9 @@ class WebOsTvRepository(
         tvName = tvName,
         clientKey = clientKey,
         isPaired = isPaired,
+        targetType = targetType,
+        bridgeUrl = bridgeUrl,
+        devicePort = devicePort,
     )
 
     private fun TvConfig.toEntity() = TvConfigEntity(
@@ -148,6 +151,9 @@ class WebOsTvRepository(
         tvName = tvName,
         clientKey = clientKey,
         isPaired = isPaired,
+        targetType = targetType,
+        bridgeUrl = bridgeUrl,
+        devicePort = devicePort,
     )
 
     private companion object {

@@ -8,6 +8,7 @@ import com.kastlg.app.domain.usecases.GetPopularTvShowsUseCase
 import com.kastlg.app.domain.usecases.GetTopRatedMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTrendingMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTvGenresUseCase
+import com.kastlg.app.domain.usecases.SearchFlixcornUseCase
 import com.kastlg.app.domain.usecases.SearchMoviesUseCase
 import com.kastlg.app.domain.usecases.SearchTvShowsUseCase
 
@@ -20,6 +21,7 @@ class HomeViewModelFactory(
     private val searchTvShows: SearchTvShowsUseCase,
     private val getMovieGenres: GetMovieGenresUseCase,
     private val getTvGenres: GetTvGenresUseCase,
+    private val searchFlixcorn: SearchFlixcornUseCase,
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -33,6 +35,7 @@ class HomeViewModelFactory(
             searchTvShows = searchTvShows,
             getMovieGenres = getMovieGenres,
             getTvGenres = getTvGenres,
+            searchFlixcorn = searchFlixcorn,
         ) as T
     }
 }

@@ -1,0 +1,217 @@
+<mxfile host="app.diagrams.net" modified="2026-07-01T17:47:00.000Z" agent="5.0" version="24.0.0" type="device">
+  <diagram id="use-cases" name="Casos de Uso">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- System Boundary -->
+        <mxCell id="4" value="" style="rounded=0;whiteSpace=wrap;html=1;arcSize=0;strokeWidth=2;strokeColor=#333333;fillColor=#FFFFFF;dashed=1;dashPattern=8 4;" vertex="1" parent="1">
+          <mxGeometry x="260" y="40" width="720" height="740" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="Kast" style="text;html=1;align=center;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="580" y="50" width="80" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Actors -->
+        <!-- Usuario (stick figure) -->
+        <mxCell id="10" value="" style="shape=mxgraph.basic.user;fillColor=#FFFFFF;strokeColor=#333333;strokeWidth=2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="70" y="330" width="50" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="Usuario" style="text;html=1;align=center;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="68" y="415" width="70" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- TMDB API (stick figure) -->
+        <mxCell id="12" value="" style="shape=mxgraph.basic.user;fillColor=#FFFFFF;strokeColor=#01D277;strokeWidth=2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="190" width="50" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="13" value="TMDB API" style="text;html=1;align=center;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;fontColor=#01D277;" vertex="1" parent="1">
+          <mxGeometry x="1088" y="275" width="85" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- TV LG webOS (stick figure) -->
+        <mxCell id="14" value="" style="shape=mxgraph.basic.user;fillColor=#FFFFFF;strokeColor=#A50034;strokeWidth=2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="510" width="50" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="15" value="TV LG webOS" style="text;html=1;align=center;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;fontStyle=1;fontColor=#A50034;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="595" width="110" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Use Cases -->
+        <!-- UC1: Explorar películas y series -->
+        <mxCell id="20" value="Explorar películas&#xa;y series" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=13;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="400" y="100" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC2: Ver detalle de película -->
+        <mxCell id="21" value="Ver detalle de&#xa;película" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="200" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC3: Ver detalle de serie -->
+        <mxCell id="22" value="Ver detalle de&#xa;serie" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="300" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC4: Buscar películas y series -->
+        <mxCell id="23" value="Buscar películas&#xa;y series" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="400" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC5: Guardar en favoritos -->
+        <mxCell id="24" value="Guardar en&#xa;favoritos" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="500" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC6: Ver historial -->
+        <mxCell id="25" value="Ver historial" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="600" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC7: Obtener datos de películas/series -->
+        <mxCell id="26" value="Obtener datos de&#xa;películas/series" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="200" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC8: Descubrir TV en la red -->
+        <mxCell id="27" value="Descubrir TV&#xa;en la red" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="370" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC9: Conectar con TV -->
+        <mxCell id="28" value="Conectar con TV" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="470" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC10: Enviar contenido a TV -->
+        <mxCell id="29" value="Enviar contenido&#xa;a TV" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="570" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- UC11: Configurar token TMDB -->
+        <mxCell id="30" value="Configurar&#xa;token TMDB" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="690" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- UC12: Configurar IP de TV manualmente -->
+        <mxCell id="31" value="Configurar IP&#xa;de TV manualmente" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="760" y="670" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Actor-Use Case Associations -->
+        <!-- Usuario → Explorar -->
+        <mxCell id="40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="20" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Ver detalle película -->
+        <mxCell id="41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="21" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Ver detalle serie -->
+        <mxCell id="42" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="22" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Buscar -->
+        <mxCell id="43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="23" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Favoritos -->
+        <mxCell id="44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="24" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Historial -->
+        <mxCell id="45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="25" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Descubrir TV -->
+        <mxCell id="46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="27" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Conectar TV -->
+        <mxCell id="47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="28" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Enviar a TV -->
+        <mxCell id="48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="29" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Configurar TMDB -->
+        <mxCell id="49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="30" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario → Configurar IP TV -->
+        <mxCell id="50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#333333;" edge="1" source="10" target="31" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TMDB API → Obtener datos -->
+        <mxCell id="51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#01D277;" edge="1" source="12" target="26" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TV LG → Descubrir TV -->
+        <mxCell id="52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#A50034;" edge="1" source="14" target="27" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TV LG → Conectar TV -->
+        <mxCell id="53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#A50034;" edge="1" source="14" target="28" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TV LG → Enviar contenido -->
+        <mxCell id="54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#A50034;" edge="1" source="14" target="29" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TV LG → Configurar IP -->
+        <mxCell id="55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#A50034;" edge="1" source="14" target="31" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Include Relationships (dashed arrows) -->
+        <!-- Ver detalle película ..include>> Obtener datos -->
+        <mxCell id="60" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashed=1;dashPattern=8 4;fontSize=10;fontColor=#666666;" edge="1" source="21" target="26" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Ver detalle serie ..include>> Obtener datos -->
+        <mxCell id="61" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashed=1;dashPattern=8 4;fontSize=10;fontColor=#666666;" edge="1" source="22" target="26" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Buscar ..include>> Obtener datos -->
+        <mxCell id="62" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashed=1;dashPattern=8 4;fontSize=10;fontColor=#666666;" edge="1" source="23" target="26" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Explorar ..include>> Obtener datos -->
+        <mxCell id="63" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashed=1;dashPattern=8 4;fontSize=10;fontColor=#666666;" edge="1" source="20" target="26" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Enviar a TV ..include>> Conectar TV -->
+        <mxCell id="64" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashed=1;dashPattern=8 4;fontSize=10;fontColor=#666666;" edge="1" source="29" target="28" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Conectar TV ..include>> Descubrir TV -->
+        <mxCell id="65" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeWidth=1;strokeColor=#666666;dashed=1;dashPattern=8 4;fontSize=10;fontColor=#666666;" edge="1" source="28" target="27" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

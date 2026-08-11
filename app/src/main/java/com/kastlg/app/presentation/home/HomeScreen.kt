@@ -60,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.kastlg.app.di.AppContainer
+import com.kastlg.app.data.remote.flixcorn.FlixcornSearchResult
 import com.kastlg.app.domain.models.Genre
 import com.kastlg.app.domain.models.Movie
 import com.kastlg.app.domain.models.TvShow
@@ -71,6 +72,7 @@ import java.util.Locale
 fun HomeRoute(
     onMovieClick: (Int) -> Unit = {},
     onTvShowClick: (Int) -> Unit = {},
+    onFlixcornSeriesClick: (String) -> Unit = {},
     onConfigureToken: () -> Unit = {},
     viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(
@@ -82,6 +84,7 @@ fun HomeRoute(
             searchTvShows = AppContainer.searchTvShows,
             getMovieGenres = AppContainer.getMovieGenres,
             getTvGenres = AppContainer.getTvGenres,
+            searchFlixcorn = AppContainer.searchFlixcorn,
         ),
     ),
 ) {
@@ -95,6 +98,7 @@ fun HomeRoute(
         onRetry = viewModel::retry,
         onMovieClick = onMovieClick,
         onTvShowClick = onTvShowClick,
+        onFlixcornSeriesClick = onFlixcornSeriesClick,
         onConfigureToken = onConfigureToken,
     )
 }
@@ -116,6 +120,7 @@ private fun HomeScreen(
     onRetry: () -> Unit,
     onMovieClick: (Int) -> Unit,
     onTvShowClick: (Int) -> Unit,
+    onFlixcornSeriesClick: (String) -> Unit,
     onConfigureToken: () -> Unit,
 ) {
     Column(
@@ -225,6 +230,7 @@ private fun HomeScreen(
                         uiState = uiState,
                         onMovieClick = onMovieClick,
                         onTvShowClick = onTvShowClick,
+                        onFlixcornSeriesClick = onFlixcornSeriesClick,
                         onConfigureToken = onConfigureToken,
                     )
                 }
@@ -579,9 +585,10 @@ private fun SearchResults(
     uiState: HomeUiState,
     onMovieClick: (Int) -> Unit,
     onTvShowClick: (Int) -> Unit,
+    onFlixcornSeriesClick: (String) -> Unit,
     onConfigureToken: () -> Unit,
 ) {
-    if (uiState.isLoading) {
+    if (uiState.isLoading && uiState.flixcornSearchLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(
                 modifier = Modifier.semantics { contentDescription = "Cargando contenido" },
@@ -591,7 +598,7 @@ private fun SearchResults(
         return
     }
 
-    if (uiState.errorMessage != null) {
+    if (uiState.errorMessage != null && !uiState.hasSearchResults) {
         Column(
             modifier = Modifier.fillMaxSize().padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -606,7 +613,7 @@ private fun SearchResults(
         return
     }
 
-    if (!uiState.hasSearchResults) {
+    if (!uiState.hasSearchResults && !uiState.flixcornSearchLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = "No se encontraron resultados",
@@ -625,7 +632,7 @@ private fun SearchResults(
         if (uiState.searchResults.isNotEmpty()) {
             item {
                 Text(
-                    text = "Películas",
+                    text = "Pel\u00edculas",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -646,6 +653,43 @@ private fun SearchResults(
             }
             items(uiState.searchTvResults, key = { "tv_${it.id}" }) { tvShow ->
                 SearchTvShowItem(tvShow = tvShow, onClick = { onTvShowClick(tvShow.id) })
+            }
+        }
+
+        if (uiState.flixcornResults.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Flixcorn",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            items(uiState.flixcornResults, key = { "flix_${it.slug}" }) { result ->
+                SearchFlixcornItem(result = result, onClick = { onFlixcornSeriesClick(result.slug) })
+            }
+        }
+
+        if (uiState.flixcornSearchLoading && uiState.flixcornResults.isEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = KastLgColors.TextSecondary,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Buscando en Flixcorn...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = KastLgColors.TextSecondary,
+                    )
+                }
             }
         }
     }
@@ -757,6 +801,76 @@ private fun SearchTvShowItem(tvShow: TvShow, onClick: () -> Unit) {
                 style = MaterialTheme.typography.bodySmall,
                 color = KastLgColors.Accent,
             )
+        }
+    }
+}
+
+@Composable
+private fun SearchFlixcornItem(result: FlixcornSearchResult, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = KastLgColors.Surface),
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (result.posterUrl != null) {
+                AsyncImage(
+                    model = result.posterUrl,
+                    contentDescription = result.title,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Default.BrokenImage, contentDescription = null, tint = KastLgColors.TextSecondary)
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = result.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = KastLgColors.Accent.copy(alpha = 0.15f),
+                    ) {
+                        Text(
+                            text = "Flixcorn",
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = KastLgColors.Accent,
+                        )
+                    }
+                }
+                Text(
+                    text = buildString {
+                        append("Serie")
+                        result.year?.let { append(" \u00b7 $it") }
+                        if (result.genres.isNotEmpty()) {
+                            append(" \u00b7 ${result.genres.take(2).joinToString(", ")}")
+                        }
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = KastLgColors.TextSecondary,
+                )
+            }
         }
     }
 }

@@ -93,6 +93,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.7.2")
     implementation("androidx.room:room-ktx:2.7.2")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("org.jsoup:jsoup:1.18.1")
     kapt("androidx.room:room-compiler:2.7.2")
 
     debugImplementation("androidx.compose.ui:ui-tooling")

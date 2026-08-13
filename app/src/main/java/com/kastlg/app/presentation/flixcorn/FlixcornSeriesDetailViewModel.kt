@@ -4,13 +4,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.kastlg.app.data.local.FlixcornSeriesFavoriteEntity
 import com.kastlg.app.data.remote.flixcorn.FlixcornResult
 import com.kastlg.app.data.remote.flixcorn.FlixcornSeriesDetail
 import com.kastlg.app.di.AppContainer
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 data class FlixcornSeriesDetailUiState(
@@ -26,26 +25,16 @@ class FlixcornSeriesDetailViewModel(
     private val _uiState = mutableStateOf(FlixcornSeriesDetailUiState())
     val uiState = _uiState
 
-    private val flixcornSeriesFavoriteRepository = AppContainer.flixcornSeriesFavoriteRepository
-
-    fun toggleFavorite() {
-        viewModelScope.launch {
-            try {
-                val series = uiState.value?.series
-                if (series != null) {
-                    flixcornSeriesFavoriteRepository.toggle(series)
-                    _uiState.value = _uiState.value.copy(isFavorite = !uiState.value.isFavorite)
-                }
-            }
-        }
-    }
-
     fun loadSeries() {
         viewModelScope.launch {
             _uiState.value = FlixcornSeriesDetailUiState(isLoading = true)
             when (val result = AppContainer.getFlixcornSeriesDetail(slug)) {
                 is FlixcornResult.Success -> {
-                    _uiState.value = FlixcornSeriesDetailUiState(series = result.data, isFavorite = isFavorite(result.data.slug))
+                    val series = result.data
+                    _uiState.value = FlixcornSeriesDetailUiState(
+                        series = series,
+                        isFavorite = isFavorite(series.slug),
+                    )
                 }
                 is FlixcornResult.Error -> {
                     _uiState.value = FlixcornSeriesDetailUiState(
@@ -59,8 +48,34 @@ class FlixcornSeriesDetailViewModel(
         }
     }
 
-    private fun isFavorite(slug: String): Boolean {
-        return flixcornSeriesFavoriteRepository.observeIsFavorite(slug.toInt()).firstOrDefault(false)
+    fun toggleFavorite() {
+        viewModelScope.launch {
+            val series = uiState.value?.series
+            if (series != null) {
+                val dao = AppContainer.flixcornSeriesFavoriteDao
+                val current = dao.observeBySlug(series.slug).firstOrNull()
+                if (current != null) {
+                    dao.deleteBySlug(series.slug)
+                    _uiState.value = _uiState.value.copy(isFavorite = false)
+                } else {
+                    dao.insert(
+                        FlixcornSeriesFavoriteEntity(
+                            slug = series.slug,
+                            title = series.title,
+                            posterUrl = series.posterUrl,
+                            favoritedAt = System.currentTimeMillis(),
+                        ),
+                    )
+                    _uiState.value = _uiState.value.copy(isFavorite = true)
+                }
+            }
+        }
+    }
+
+    private suspend fun isFavorite(slug: String): Boolean {
+        return AppContainer.flixcornSeriesFavoriteDao.observeBySlug(slug)
+            .map { it != null }
+            .firstOrNull() ?: false
     }
 }
 

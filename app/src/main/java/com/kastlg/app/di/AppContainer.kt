@@ -57,10 +57,8 @@ object AppContainer {
         RoomHistoryRepository(database.historyDao())
     }
 
-    val flixcornSeriesFavoriteRepository by lazy {
-        RoomFlixcornSeriesFavoriteRepository(
-            dao = database.flixcornSeriesFavoriteDao(),
-        )
+    val flixcornSeriesFavoriteDao by lazy {
+        database.flixcornSeriesFavoriteDao()
     }
 
     private val ssapClient by lazy { SsapClient() }

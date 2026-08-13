@@ -24,20 +24,16 @@ class HistoryViewModel(
         .map { history ->
             HistoryUiState(
                 isLoading = false,
-                movies = history.mapNotNull { entry ->
-                    try {
-                        SavedMovieItem(
-                            tmdbId = entry.tmdbId,
-                            title = entry.title,
-                            posterUrl = entry.posterUrl,
-                            releaseDate = entry.releaseDate,
-                            voteAverage = entry.voteAverage,
-                            sentToTv = entry.sentToTv,
-                        )
-                    } catch (_) {
-                        null
-                    }
-                }.filter { it != null }.map { it!! },
+                movies = history.map {
+                    SavedMovieItem(
+                        tmdbId = it.tmdbId,
+                        title = it.title,
+                        posterUrl = it.posterUrl,
+                        releaseDate = it.releaseDate,
+                        voteAverage = it.voteAverage,
+                        sentToTv = it.sentToTv,
+                    )
+                },
             )
         }
         .catch { error ->

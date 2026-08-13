@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +33,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -131,9 +134,51 @@ private fun SeriesDetailContent(
     series: FlixcornSeriesDetail,
     onEpisodeClick: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: FlixcornSeriesDetailViewModel = remember { FlixcornSeriesDetailViewModel(slug = series.slug) },
+    viewModel: FlixcornSeriesDetailViewModel,
 ) {
-    val uiState = viewModel.uiState
+    val isFavorite = viewModel.uiState.value.isFavorite
+
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = series.title,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            OutlinedButton(
+                onClick = { viewModel.toggleFavorite() },
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = if (isFavorite) KastLgColors.Accent else KastLgColors.Surface,
+                ),
+            ) {
+                val favoriteLabel = if (isFavorite) "En favoritos" else "Favorito"
+                val favoriteIcon = if (isFavorite) {
+                    Icons.Default.Favorite
+                } else {
+                    Icons.Default.FavoriteBorder
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = favoriteIcon,
+                        contentDescription = favoriteLabel,
+                        tint = if (isFavorite) KastLgColors.Accent else KastLgColors.TextSecondary,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = favoriteLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isFavorite) KastLgColors.Accent else KastLgColors.TextSecondary,
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+    }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -236,33 +281,6 @@ private fun SeriesDetailContent(
                         maxLines = 6,
                         overflow = TextOverflow.Ellipsis,
                     )
-                }
-            }
-        }
-
-        // Favorite button
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                OutlinedButton(
-                    onClick = viewModel.toggleFavorite,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = if (uiState.isFavorite) KastLgColors.Error else KastLgColors.TextPrimary,
-                    ),
-                ) {
-                    Icon(
-                        imageVector = if (uiState.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = if (uiState.isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (uiState.isFavorite) "En favoritos" else "Favorito")
                 }
             }
         }

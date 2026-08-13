@@ -24,19 +24,15 @@ class FavoritesViewModel(
         .map { favorites ->
             FavoritesUiState(
                 isLoading = false,
-                movies = favorites.mapNotNull { favorite ->
-                    try {
-                        SavedMovieItem(
-                            tmdbId = favorite.tmdbId,
-                            title = favorite.title,
-                            posterUrl = favorite.posterUrl,
-                            releaseDate = favorite.releaseDate,
-                            voteAverage = favorite.voteAverage,
-                        )
-                    } catch (_) {
-                        null
-                    }
-                }.filter { it != null }.map { it!! },
+                movies = favorites.map {
+                    SavedMovieItem(
+                        tmdbId = it.tmdbId,
+                        title = it.title,
+                        posterUrl = it.posterUrl,
+                        releaseDate = it.releaseDate,
+                        voteAverage = it.voteAverage,
+                    )
+                },
             )
         }
         .catch { error ->

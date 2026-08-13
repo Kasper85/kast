@@ -119,6 +119,7 @@ fun FlixcornSeriesDetailRoute(
                     series = uiState.series!!,
                     onEpisodeClick = onEpisodeClick,
                     modifier = Modifier.padding(padding),
+                    viewModel = viewModel,
                 )
             }
         }
@@ -130,7 +131,10 @@ private fun SeriesDetailContent(
     series: FlixcornSeriesDetail,
     onEpisodeClick: (Int, Int) -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: FlixcornSeriesDetailViewModel = remember { FlixcornSeriesDetailViewModel(slug = series.slug) },
 ) {
+    val uiState = viewModel.uiState
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 32.dp),
@@ -232,6 +236,33 @@ private fun SeriesDetailContent(
                         maxLines = 6,
                         overflow = TextOverflow.Ellipsis,
                     )
+                }
+            }
+        }
+
+        // Favorite button
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                OutlinedButton(
+                    onClick = viewModel.toggleFavorite,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = if (uiState.isFavorite) KastLgColors.Error else KastLgColors.TextPrimary,
+                    ),
+                ) {
+                    Icon(
+                        imageVector = if (uiState.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (uiState.isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (uiState.isFavorite) "En favoritos" else "Favorito")
                 }
             }
         }

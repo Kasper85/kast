@@ -89,8 +89,9 @@ class MovieDetailViewModel(
                     }
                 },
                 onFailure = { error ->
+                    val errorMsg = error.message ?: "No se pudo abrir en la TV"
                     mutableUiState.update {
-                        it.copy(tvErrorMessage = error.message ?: "No se pudo abrir en la TV")
+                        it.copy(tvErrorMessage = errorMsg)
                     }
                 },
             )

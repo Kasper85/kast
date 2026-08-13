@@ -1,5 +1,6 @@
 package com.kastlg.app.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

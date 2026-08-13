@@ -12,8 +12,9 @@ import androidx.room.RoomDatabase
         TvConfigEntity::class,
         FlixcornSeriesEntity::class,
         FlixcornEpisodeCacheEntity::class,
+        FlixcornSeriesFavoriteEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class KastLgDatabase : RoomDatabase() {
@@ -26,6 +27,8 @@ abstract class KastLgDatabase : RoomDatabase() {
     abstract fun flixcornSeriesDao(): FlixcornSeriesDao
 
     abstract fun flixcornEpisodeCacheDao(): FlixcornEpisodeCacheDao
+
+    abstract fun flixcornSeriesFavoriteDao(): FlixcornSeriesFavoriteDao
 
     companion object {
         private const val DATABASE_NAME = "kastlg.db"

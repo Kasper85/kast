@@ -61,8 +61,17 @@ object DatabaseMigrations {
                     `slug` TEXT NOT NULL,
                     `title` TEXT NOT NULL,
                     `poster_url` TEXT,
+                    `backdrop_url` TEXT,
                     `overview` TEXT NOT NULL,
-                    `favorited_at` INTEGER NOT NULL
+                    `year` INTEGER,
+                    `rating` REAL,
+                    `genres` TEXT NOT NULL,
+                    `number_of_seasons` INTEGER NOT NULL,
+                    `number_of_episodes` INTEGER NOT NULL,
+                    `status` TEXT NOT NULL,
+                    `detail_url` TEXT NOT NULL,
+                    `cached_at` INTEGER NOT NULL,
+                    `expires_at` INTEGER NOT NULL
                 )
                 """.trimIndent(),
             )
@@ -84,7 +93,7 @@ object DatabaseMigrations {
     }
 
     /**
-     * Migration 5: Adds favorite tracking for flixcorn series.
+     * Migration 5_6: Adds favorite tracking for flixcorn series.
      */
     private val MIGRATION_5_6 = object : Migration(5, 6) {
         override fun migrate(db: SupportSQLiteDatabase) {

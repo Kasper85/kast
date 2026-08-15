@@ -14,3 +14,19 @@
 keystore.properties
 *.apk
 google-services.json
+
+# Local tooling indexes
+.codegraph/
+.pytest_cache/
+
+# Diagnostic/debug artifacts (device pulls, crash logs, samples)
+build_output.txt
+crash_*.txt
+live_*.txt
+flixcorn_*.txt
+kast_live.txt
+kast_pid_logs.txt
+kastlg_device.db
+episode_sample.html
+migration_detail.txt
+sim_migrate.py

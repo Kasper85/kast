@@ -8,6 +8,7 @@ import com.kastlg.app.domain.repositories.FavoriteRepository
 import com.kastlg.app.domain.repositories.HistoryRepository
 import com.kastlg.app.domain.repositories.MissingTmdbTokenException
 import com.kastlg.app.domain.repositories.TvRepository
+import com.kastlg.app.domain.repositories.WatchedRepository
 import com.kastlg.app.domain.usecases.GetMovieDetailUseCase
 import java.io.IOException
 import kotlinx.coroutines.CancellationException
@@ -26,6 +27,7 @@ class MovieDetailViewModel(
     private val favoriteRepository: FavoriteRepository,
     private val historyRepository: HistoryRepository,
     private val tvRepository: TvRepository,
+    private val watchedRepository: WatchedRepository,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(MovieDetailUiState())
     private var loadedDetail: MovieDetail? = null
@@ -41,6 +43,7 @@ class MovieDetailViewModel(
 
     init {
         observeFavorite()
+        observeWatched()
         loadDetail()
     }
 
@@ -64,37 +67,55 @@ class MovieDetailViewModel(
         }
     }
 
+    fun toggleWatched() {
+        viewModelScope.launch {
+            try {
+                watchedRepository.toggleMovie(movieId)
+                mutableUiState.update { it.copy(watchedErrorMessage = null) }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Throwable) {
+                mutableUiState.update {
+                    it.copy(watchedErrorMessage = WATCHED_PERSISTENCE_ERROR)
+                }
+            }
+        }
+    }
+
     fun watchOnTv() {
         val detail = loadedDetail ?: return
         viewModelScope.launch {
             mutableUiState.update { it.copy(tvErrorMessage = null, tvSuccessMessage = null) }
+            try {
+                val config = tvRepository.getConfig()
+                if (config == null || !config.isPaired) {
+                    _navigationEvent.emit(NavigationEvent.NavigateToTvSettings)
+                    return@launch
+                }
 
-            val config = tvRepository.getConfig()
-            if (config == null || !config.isPaired) {
-                _navigationEvent.emit(NavigationEvent.NavigateToTvSettings)
-                return@launch
+                val url = PlaybackUrlBuilder.buildMovieUrl(detail.id)
+                val result = tvRepository.openUrl(url)
+                result.fold(
+                    onSuccess = {
+                        mutableUiState.update { it.copy(tvSuccessMessage = "Enviado a la TV") }
+                        try {
+                            historyRepository.recordSentToTv(detail)
+                        } catch (_: Throwable) {
+                            // Non-critical: TV playback succeeded even if history update failed
+                        }
+                    },
+                    onFailure = { error ->
+                        val errorMsg = error.message ?: "No se pudo abrir en la TV"
+                        mutableUiState.update {
+                            it.copy(tvErrorMessage = errorMsg)
+                        }
+                    },
+                )
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Throwable) {
+                mutableUiState.update { it.copy(tvErrorMessage = "No se pudo abrir en la TV") }
             }
-
-            val url = PlaybackUrlBuilder.buildMovieUrl(detail.id)
-            val result = tvRepository.openUrl(url)
-            result.fold(
-                onSuccess = {
-                    mutableUiState.update {
-                        it.copy(tvSuccessMessage = "Enviado a la TV")
-                    }
-                    try {
-                        historyRepository.recordSentToTv(detail)
-                    } catch (_: Throwable) {
-                        // Non-critical: TV playback succeeded even if history update failed
-                    }
-                },
-                onFailure = { error ->
-                    val errorMsg = error.message ?: "No se pudo abrir en la TV"
-                    mutableUiState.update {
-                        it.copy(tvErrorMessage = errorMsg)
-                    }
-                },
-            )
         }
     }
 
@@ -112,6 +133,26 @@ class MovieDetailViewModel(
                         it.copy(
                             isFavorite = isFavorite,
                             favoriteErrorMessage = null,
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun observeWatched() {
+        viewModelScope.launch {
+            watchedRepository.observeIsMovieWatched(movieId)
+                .catch { error ->
+                    if (error is CancellationException) throw error
+                    mutableUiState.update {
+                        it.copy(watchedErrorMessage = WATCHED_PERSISTENCE_ERROR)
+                    }
+                }
+                .collect { isWatched ->
+                    mutableUiState.update {
+                        it.copy(
+                            isWatched = isWatched,
+                            watchedErrorMessage = null,
                         )
                     }
                 }
@@ -174,6 +215,8 @@ class MovieDetailViewModel(
     private companion object {
         const val FAVORITE_PERSISTENCE_ERROR =
             "No se pudo guardar el favorito. Intenta de nuevo."
+        const val WATCHED_PERSISTENCE_ERROR =
+            "No se pudo actualizar el estado de visto. Intenta de nuevo."
         const val HISTORY_PERSISTENCE_ERROR =
             "No se pudo registrar en el historial."
     }

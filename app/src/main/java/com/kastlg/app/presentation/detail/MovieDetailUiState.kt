@@ -11,14 +11,16 @@ data class MovieDetailUiState(
     val voteAverage: Double = 0.0,
     val genres: List<Genre> = emptyList(),
     val isFavorite: Boolean = false,
+    val isWatched: Boolean = false,
     val errorMessage: String? = null,
     val favoriteErrorMessage: String? = null,
+    val watchedErrorMessage: String? = null,
     val historyErrorMessage: String? = null,
     val tvErrorMessage: String? = null,
     val tvSuccessMessage: String? = null,
 ) {
     val persistenceErrorMessage: String?
-        get() = favoriteErrorMessage ?: historyErrorMessage
+        get() = favoriteErrorMessage ?: watchedErrorMessage ?: historyErrorMessage
 
     val tvMessage: String?
         get() = tvErrorMessage ?: tvSuccessMessage

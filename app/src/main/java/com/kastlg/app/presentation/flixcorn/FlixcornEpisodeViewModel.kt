@@ -5,8 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.kastlg.app.data.remote.flixcorn.FlixcornResult
+import com.kastlg.app.data.remote.flixcorn.FlixcornSeriesDetail
 import com.kastlg.app.data.remote.flixcorn.StreamingServer
 import com.kastlg.app.di.AppContainer
+import com.kastlg.app.domain.repositories.WatchedRepository
+import com.kastlg.app.domain.usecases.GetFlixcornEpisodeServers
+import com.kastlg.app.domain.usecases.GetFlixcornSeriesDetail
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
 data class FlixcornEpisodeUiState(
@@ -17,32 +24,101 @@ data class FlixcornEpisodeUiState(
     val tvSending: Boolean = false,
     val tvSuccessMessage: String? = null,
     val tvErrorMessage: String? = null,
+    val isWatched: Boolean = false,
+    val nextEpisode: Pair<Int, Int>? = null,
+    val season: Int = 1,
+    val episode: Int = 1,
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FlixcornEpisodeViewModel(
     private val slug: String,
     private val season: Int,
     private val episode: Int,
+    private val getEpisodeServers: GetFlixcornEpisodeServers,
+    private val getSeriesDetail: GetFlixcornSeriesDetail,
+    private val watchedRepository: WatchedRepository,
 ) : ViewModel() {
-    private val _uiState = mutableStateOf(FlixcornEpisodeUiState())
+    private val _uiState = mutableStateOf(
+        FlixcornEpisodeUiState(season = season, episode = episode),
+    )
     val uiState = _uiState
+
+    private var currentSeason = season
+    private var currentEpisode = episode
+    private var seriesDetail: FlixcornSeriesDetail? = null
+
+    private val episodeKey = MutableStateFlow(Triple(slug, season, episode))
+
+    init {
+        viewModelScope.launch {
+            episodeKey
+                .flatMapLatest { (s, seasonNumber, episodeNumber) ->
+                    watchedRepository.observeIsEpisodeWatched(s, seasonNumber, episodeNumber)
+                }
+                .collect { isWatched ->
+                    _uiState.value = _uiState.value.copy(isWatched = isWatched)
+                }
+        }
+        refreshNextEpisode()
+    }
 
     fun loadServers() {
         viewModelScope.launch {
-            _uiState.value = FlixcornEpisodeUiState(isLoading = true)
-            when (val result = AppContainer.getFlixcornEpisodeServers(slug, season, episode)) {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            when (val result = getEpisodeServers(slug, currentSeason, currentEpisode)) {
                 is FlixcornResult.Success -> {
-                    _uiState.value = FlixcornEpisodeUiState(servers = result.data)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        servers = result.data,
+                    )
                 }
                 is FlixcornResult.Error -> {
-                    _uiState.value = FlixcornEpisodeUiState(
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
                         error = "No se pudieron cargar los servidores. Intenta de nuevo.",
                     )
                 }
                 is FlixcornResult.Loading -> {
-                    _uiState.value = FlixcornEpisodeUiState(isLoading = true)
+                    _uiState.value = _uiState.value.copy(isLoading = true)
                 }
             }
+        }
+    }
+
+    fun loadNextEpisode() {
+        val next = _uiState.value.nextEpisode ?: return
+        val nextSeason = next.first
+        val nextEpisode = next.second
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            when (val result = getEpisodeServers(slug, nextSeason, nextEpisode)) {
+                is FlixcornResult.Success -> {
+                    updateCurrentEpisode(nextSeason, nextEpisode)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        servers = result.data,
+                        season = nextSeason,
+                        episode = nextEpisode,
+                    )
+                    recomputeNextEpisode()
+                }
+                is FlixcornResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "No se pudieron cargar los servidores. Intenta de nuevo.",
+                    )
+                }
+                is FlixcornResult.Loading -> {
+                    _uiState.value = _uiState.value.copy(isLoading = true)
+                }
+            }
+        }
+    }
+
+    fun toggleWatched() {
+        viewModelScope.launch {
+            watchedRepository.toggleEpisode(slug, currentSeason, currentEpisode)
         }
     }
 
@@ -96,6 +172,45 @@ class FlixcornEpisodeViewModel(
             }
         }
     }
+
+    private fun refreshNextEpisode() {
+        viewModelScope.launch {
+            when (val result = getSeriesDetail(slug)) {
+                is FlixcornResult.Success -> {
+                    seriesDetail = result.data
+                    recomputeNextEpisode()
+                }
+                is FlixcornResult.Error -> Unit
+                is FlixcornResult.Loading -> Unit
+            }
+        }
+    }
+
+    private fun recomputeNextEpisode() {
+        val detail = seriesDetail ?: return
+        _uiState.value = _uiState.value.copy(
+            nextEpisode = computeNextEpisode(detail, currentSeason, currentEpisode),
+        )
+    }
+
+    private fun computeNextEpisode(
+        detail: FlixcornSeriesDetail,
+        seasonNumber: Int,
+        episodeNumber: Int,
+    ): Pair<Int, Int>? {
+        val currentSeasonDetail = detail.seasons.firstOrNull { it.seasonNumber == seasonNumber }
+        val maxEpisode = currentSeasonDetail?.episodes?.maxOfOrNull { it.episodeNumber }
+        if (maxEpisode != null && episodeNumber < maxEpisode) {
+            return seasonNumber to (episodeNumber + 1)
+        }
+        return if (seasonNumber < detail.numberOfSeasons) (seasonNumber + 1) to 1 else null
+    }
+
+    private fun updateCurrentEpisode(seasonNumber: Int, episodeNumber: Int) {
+        currentSeason = seasonNumber
+        currentEpisode = episodeNumber
+        episodeKey.value = Triple(slug, seasonNumber, episodeNumber)
+    }
 }
 
 class FlixcornEpisodeViewModelFactory(
@@ -106,6 +221,13 @@ class FlixcornEpisodeViewModelFactory(
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         require(modelClass.isAssignableFrom(FlixcornEpisodeViewModel::class.java))
-        return FlixcornEpisodeViewModel(slug = slug, season = season, episode = episode) as T
+        return FlixcornEpisodeViewModel(
+            slug = slug,
+            season = season,
+            episode = episode,
+            getEpisodeServers = AppContainer.getFlixcornEpisodeServers,
+            getSeriesDetail = AppContainer.getFlixcornSeriesDetail,
+            watchedRepository = AppContainer.watchedRepository,
+        ) as T
     }
 }

@@ -1,11 +1,17 @@
 package com.kastlg.app.presentation.home
 
 import com.kastlg.app.MainDispatcherRule
+import com.kastlg.app.data.remote.flixcorn.FlixcornError
+import com.kastlg.app.data.remote.flixcorn.FlixcornResult
+import com.kastlg.app.data.remote.flixcorn.FlixcornSearchResult
+import com.kastlg.app.data.remote.flixcorn.FlixcornSeriesDetail
+import com.kastlg.app.data.remote.flixcorn.StreamingServer
 import com.kastlg.app.domain.models.Genre
 import com.kastlg.app.domain.models.Movie
 import com.kastlg.app.domain.models.MovieDetail
 import com.kastlg.app.domain.models.TvShow
 import com.kastlg.app.domain.models.TvShowDetail
+import com.kastlg.app.domain.repositories.FlixcornRepository
 import com.kastlg.app.domain.repositories.MissingTmdbTokenException
 import com.kastlg.app.domain.repositories.MovieRepository
 import com.kastlg.app.domain.usecases.GetMovieGenresUseCase
@@ -14,6 +20,7 @@ import com.kastlg.app.domain.usecases.GetPopularTvShowsUseCase
 import com.kastlg.app.domain.usecases.GetTopRatedMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTrendingMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTvGenresUseCase
+import com.kastlg.app.domain.usecases.SearchFlixcornUseCase
 import com.kastlg.app.domain.usecases.SearchMoviesUseCase
 import com.kastlg.app.domain.usecases.SearchTvShowsUseCase
 import java.io.IOException
@@ -113,7 +120,46 @@ class HomeViewModelTest {
         assertEquals("Trending", viewModel.uiState.value.trendingMovies.single().title)
     }
 
-    private fun createViewModel(repository: MovieRepository) = HomeViewModel(
+    @Test
+    fun `search on movies tab only queries movies not flixcorn`() = runTest {
+        val repository = FakeMovieRepository()
+        val flixcorn = FakeFlixcornRepository()
+        val viewModel = createViewModel(repository, flixcorn)
+        runCurrent()
+
+        viewModel.onQueryChange("Inception")
+        advanceTimeBy(400)
+        runCurrent()
+
+        assertEquals(listOf("Inception"), repository.searchQueries)
+        assertEquals(0, flixcorn.searchSeriesCallCount)
+        assertTrue(viewModel.uiState.value.searchResults.isNotEmpty())
+    }
+
+    @Test
+    fun `switching to series tab during active search re-fires scoped search to flixcorn`() = runTest {
+        val repository = FakeMovieRepository()
+        val flixcorn = FakeFlixcornRepository()
+        val viewModel = createViewModel(repository, flixcorn)
+        runCurrent()
+
+        viewModel.onQueryChange("Inception")
+        advanceTimeBy(400)
+        runCurrent()
+        assertEquals(0, flixcorn.searchSeriesCallCount)
+
+        // Switch to series: search re-fires immediately, scoped to series sources.
+        viewModel.onTabSelected(HomeTab.Series)
+        runCurrent()
+
+        assertEquals(HomeTab.Series, viewModel.uiState.value.selectedTab)
+        assertTrue(flixcorn.searchSeriesCallCount > 0)
+    }
+
+    private fun createViewModel(
+        repository: MovieRepository,
+        flixcornRepository: FlixcornRepository = FakeFlixcornRepository(),
+    ) = HomeViewModel(
         getTrendingMovies = GetTrendingMoviesUseCase(repository),
         getNowPlayingMovies = GetNowPlayingMoviesUseCase(repository),
         getTopRatedMovies = GetTopRatedMoviesUseCase(repository),
@@ -122,7 +168,30 @@ class HomeViewModelTest {
         searchTvShows = SearchTvShowsUseCase(repository),
         getMovieGenres = GetMovieGenresUseCase(repository),
         getTvGenres = GetTvGenresUseCase(repository),
+        searchFlixcorn = SearchFlixcornUseCase(flixcornRepository),
     )
+
+    private class FakeFlixcornRepository : FlixcornRepository {
+        var searchSeriesCallCount = 0
+
+        override suspend fun searchSeries(query: String): FlixcornResult<List<FlixcornSearchResult>> {
+            searchSeriesCallCount += 1
+            return FlixcornResult.Success(emptyList())
+        }
+
+        override suspend fun getSeriesDetail(slug: String): FlixcornResult<FlixcornSeriesDetail> =
+            FlixcornResult.Error(FlixcornError.NO_SERVERS_FOUND)
+
+        override suspend fun getEpisodeServers(
+            slug: String,
+            season: Int,
+            episode: Int,
+        ): FlixcornResult<List<StreamingServer>> =
+            FlixcornResult.Success(emptyList())
+
+        override suspend fun resolvePlayerUrl(token: String): FlixcornResult<String> =
+            FlixcornResult.Success("https://example.com/resolve/$token")
+    }
 
     private class FakeMovieRepository(
         private val missingToken: Boolean = false,

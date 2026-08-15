@@ -13,6 +13,7 @@ import com.kastlg.app.data.remote.flixcorn.FlixcornSearchResult
 import com.kastlg.app.data.remote.flixcorn.FlixcornSeriesDetail
 import com.kastlg.app.data.remote.flixcorn.FlixcornScraper
 import com.kastlg.app.data.remote.flixcorn.StreamingServer
+import com.kastlg.app.data.remote.flixcorn.sortedOnlineFirst
 import com.kastlg.app.domain.repositories.FlixcornRepository
 
 class FlixcornRepositoryImpl(
@@ -63,7 +64,8 @@ class FlixcornRepositoryImpl(
             Log.d(TAG, "getEpisodeServers cache hit slug=$slug s${season}e$episode")
             val servers = parseServersFromJson(cached.serversJson)
             if (servers.isNotEmpty()) {
-                return FlixcornResult.Success(servers)
+                // Legacy caches were stored in name-priority order — re-sort online-first.
+                return FlixcornResult.Success(servers.sortedOnlineFirst())
             }
         }
 

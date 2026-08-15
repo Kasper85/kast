@@ -22,9 +22,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.OndemandVideo
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -81,7 +85,7 @@ fun FlixcornEpisodeRoute(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("S${season}E$episode - Servidores")
+                    Text("S${uiState.season}E${uiState.episode} - Servidores")
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -116,6 +120,14 @@ fun FlixcornEpisodeRoute(
                     )
                 }
             }
+
+            EpisodeControls(
+                isWatched = uiState.isWatched,
+                nextEpisode = uiState.nextEpisode,
+                onToggleWatched = { viewModel.toggleWatched() },
+                onNextEpisode = { viewModel.loadNextEpisode() },
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             when {
                 uiState.isLoading -> {
@@ -166,6 +178,59 @@ fun FlixcornEpisodeRoute(
                         modifier = Modifier.weight(1f),
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EpisodeControls(
+    isWatched: Boolean,
+    nextEpisode: Pair<Int, Int>?,
+    onToggleWatched: () -> Unit,
+    onNextEpisode: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FilterChip(
+            selected = isWatched,
+            onClick = onToggleWatched,
+            label = { Text(if (isWatched) "Visto" else "Marcar como visto") },
+            leadingIcon = {
+                Icon(
+                    imageVector = if (isWatched) {
+                        Icons.Default.CheckCircle
+                    } else {
+                        Icons.Default.RadioButtonUnchecked
+                    },
+                    contentDescription = null,
+                )
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = KastLgColors.Accent.copy(alpha = 0.15f),
+                selectedLabelColor = KastLgColors.Accent,
+            ),
+        )
+        if (nextEpisode != null) {
+            Button(
+                onClick = onNextEpisode,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = KastLgColors.Accent,
+                    contentColor = KastLgColors.Background,
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SkipNext,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Siguiente episodio")
             }
         }
     }
@@ -279,6 +344,26 @@ private fun ServerCard(server: StreamingServer, enabled: Boolean = true, onClick
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val isPrimary = server.onlineUrl?.contains("/player/") == true
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = if (isPrimary) {
+                            KastLgColors.Accent
+                        } else {
+                            KastLgColors.Accent.copy(alpha = 0.12f)
+                        },
+                    ) {
+                        Text(
+                            text = if (isPrimary) "Ver Online" else "Link Directo",
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isPrimary) {
+                                KastLgColors.Background
+                            } else {
+                                KastLgColors.Accent
+                            },
+                        )
+                    }
                     Surface(
                         shape = RoundedCornerShape(4.dp),
                         color = KastLgColors.Accent.copy(alpha = 0.12f),

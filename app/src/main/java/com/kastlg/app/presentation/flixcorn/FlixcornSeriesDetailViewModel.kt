@@ -8,6 +8,7 @@ import com.kastlg.app.data.local.FlixcornSeriesFavoriteEntity
 import com.kastlg.app.data.remote.flixcorn.FlixcornResult
 import com.kastlg.app.data.remote.flixcorn.FlixcornSeriesDetail
 import com.kastlg.app.di.AppContainer
+import com.kastlg.app.domain.usecases.GetFlixcornSeriesDetail
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -21,6 +22,7 @@ data class FlixcornSeriesDetailUiState(
 
 class FlixcornSeriesDetailViewModel(
     private val slug: String,
+    private val getSeriesDetail: GetFlixcornSeriesDetail,
 ) : ViewModel() {
     private val _uiState = mutableStateOf(FlixcornSeriesDetailUiState())
     val uiState = _uiState
@@ -28,16 +30,18 @@ class FlixcornSeriesDetailViewModel(
     fun loadSeries() {
         viewModelScope.launch {
             _uiState.value = FlixcornSeriesDetailUiState(isLoading = true)
-            when (val result = AppContainer.getFlixcornSeriesDetail(slug)) {
+            when (val result = getSeriesDetail(slug)) {
                 is FlixcornResult.Success -> {
                     val series = result.data
                     _uiState.value = FlixcornSeriesDetailUiState(
+                        isLoading = false,
                         series = series,
                         isFavorite = isFavorite(series.slug),
                     )
                 }
                 is FlixcornResult.Error -> {
                     _uiState.value = FlixcornSeriesDetailUiState(
+                        isLoading = false,
                         error = "No se pudo cargar la serie. Intenta de nuevo.",
                     )
                 }
@@ -72,11 +76,11 @@ class FlixcornSeriesDetailViewModel(
         }
     }
 
-    private suspend fun isFavorite(slug: String): Boolean {
-        return AppContainer.flixcornSeriesFavoriteDao.observeBySlug(slug)
+    private suspend fun isFavorite(slug: String): Boolean = runCatching {
+        AppContainer.flixcornSeriesFavoriteDao.observeBySlug(slug)
             .map { it != null }
             .firstOrNull() ?: false
-    }
+    }.getOrDefault(false)
 }
 
 class FlixcornSeriesDetailViewModelFactory(
@@ -85,6 +89,9 @@ class FlixcornSeriesDetailViewModelFactory(
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         require(modelClass.isAssignableFrom(FlixcornSeriesDetailViewModel::class.java))
-        return FlixcornSeriesDetailViewModel(slug = slug) as T
+        return FlixcornSeriesDetailViewModel(
+            slug = slug,
+            getSeriesDetail = AppContainer.getFlixcornSeriesDetail,
+        ) as T
     }
 }

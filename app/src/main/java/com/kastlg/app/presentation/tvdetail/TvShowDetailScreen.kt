@@ -22,7 +22,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -36,6 +37,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -62,7 +64,7 @@ import com.kastlg.app.presentation.theme.KastLgColors
 @Composable
 fun TvShowDetailRoute(
     onBack: () -> Unit,
-    onWatchOnTv: () -> Unit,
+    onToggleFavorite: () -> Unit,
     onSeasonSelected: (Int) -> Unit,
     onEpisodeSelected: (Episode) -> Unit,
     viewModel: TvShowDetailViewModel,
@@ -350,73 +352,69 @@ fun TvShowDetailRoute(
                         Spacer(modifier = Modifier.height(28.dp))
                     }
 
-                    // TV Message
-                    val tvMessage = uiState.tvMessage
-                    if (tvMessage != null) {
-                        val isError = uiState.tvErrorMessage != null
-                        Surface(
+                    // Flixcorn episode resolution
+                    if (uiState.isResolvingEpisode) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 24.dp),
-                            color = if (isError) MaterialTheme.colorScheme.errorContainer else Color(0xFF1B3A1B),
-                            shape = RoundedCornerShape(12.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = tvMessage,
-                                modifier = Modifier.padding(12.dp),
+                                text = "Buscando en Flixcorn…",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = if (isError) MaterialTheme.colorScheme.onErrorContainer else Color(0xFFE8F5E9),
+                                color = KastLgColors.TextSecondary,
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    // Watch on TV button
-                    Button(
-                        onClick = onWatchOnTv,
+                    val episodeNotice = uiState.episodeNotice
+                    if (episodeNotice != null) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(12.dp),
+                        ) {
+                            Text(
+                                text = episodeNotice,
+                                modifier = Modifier.padding(12.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
+                    // Favorite button for series
+                    OutlinedButton(
+                        onClick = onToggleFavorite,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = KastLgColors.Accent,
-                            contentColor = KastLgColors.Background,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = if (uiState.isFavorite) KastLgColors.Error else KastLgColors.TextPrimary,
                         ),
                     ) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Ver en TV",
+                            imageVector = if (uiState.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (uiState.isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
                             modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (uiState.selectedEpisode != null) "Ver episodio en TV" else "Ver en TV")
+                        Text(if (uiState.isFavorite) "En favoritos" else "Favorito")
                     }
-
-                    // Episode feedback
-                    val selectedEpisode = uiState.selectedEpisode
-                    if (selectedEpisode != null) {
-                        Text(
-                            text = "Temporada ${selectedEpisode.seasonNumber} · Episodio ${selectedEpisode.episodeNumber}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = KastLgColors.Accent,
-                            modifier = Modifier.padding(horizontal = 24.dp),
-                        )
-                    } else if (uiState.selectedSeason != null) {
-                        Text(
-                            text = "Selecciona un episodio para enviar a la TV",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = KastLgColors.TextSecondary,
-                            modifier = Modifier.padding(horizontal = 24.dp),
-                        )
-                    }
-
-                    // Favorites placeholder for series
-                    Text(
-                        text = "Próximamente: guardar series en favoritos",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = KastLgColors.TextSecondary.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                    )
 
                     Spacer(modifier = Modifier.height(12.dp))
                 }

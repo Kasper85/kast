@@ -2,9 +2,13 @@ package com.kastlg.app.data.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "flixcorn_series")
+@Entity(
+    tableName = "flixcorn_series",
+    indices = [Index(value = ["slug"], unique = true)],
+)
 data class FlixcornSeriesEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

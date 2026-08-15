@@ -198,6 +198,7 @@ fun KastLgApp() {
                             favoriteRepository = AppContainer.favoriteRepository,
                             historyRepository = AppContainer.historyRepository,
                             tvRepository = AppContainer.tvRepository,
+                            watchedRepository = AppContainer.watchedRepository,
                         ),
                     )
 
@@ -230,12 +231,30 @@ fun KastLgApp() {
                             tvShowId = tvShowId,
                             getTvShowDetail = AppContainer.getTvShowDetail,
                             getTvSeason = AppContainer.getTvSeason,
-                            tvRepository = AppContainer.tvRepository,
+                            favoriteRepository = AppContainer.favoriteRepository,
+                            resolveFlixcornSeriesSlug = AppContainer.resolveFlixcornSeriesSlug,
                         ),
                     )
+
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    viewModel.navigationEvent.collect { event ->
+                        when (event) {
+                            is com.kastlg.app.presentation.tvdetail.TvShowDetailViewModel.NavigationEvent.NavigateToFlixcornEpisode -> {
+                                navController.navigate(
+                                    FlixcornEpisodeRoutes.create(
+                                        slug = event.slug,
+                                        season = event.season,
+                                        episode = event.episode,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+
                 TvShowDetailRoute(
                     onBack = { navController.popBackStack() },
-                    onWatchOnTv = { viewModel.watchOnTv() },
+                    onToggleFavorite = { viewModel.toggleFavorite() },
                     onSeasonSelected = { seasonNumber -> viewModel.selectSeason(seasonNumber) },
                     onEpisodeSelected = { episode -> viewModel.selectEpisode(episode) },
                     viewModel = viewModel,

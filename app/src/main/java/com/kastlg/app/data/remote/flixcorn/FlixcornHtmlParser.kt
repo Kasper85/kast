@@ -186,7 +186,7 @@ object FlixcornHtmlParser {
             }
         }
 
-        return sortServersByPriority(servers)
+        return servers.sortedOnlineFirst()
     }
 
     private fun parseServerRow(
@@ -220,14 +220,6 @@ object FlixcornHtmlParser {
         return doc.selectFirst(SELECTOR_PLAYER_META)
             ?.attr(ATTR_DATA_LINK_TOKEN)
             ?.takeIf { it.isNotBlank() }
-    }
-
-    private fun sortServersByPriority(servers: List<StreamingServer>): List<StreamingServer> {
-        val priority = listOf("Voe", "Dsvplay", "Vidara", "Luluvdoo", "Streamtape", "Byseqekaho", "Vidmoly")
-        return servers.sortedBy { server ->
-            val index = priority.indexOf(server.serverName)
-            if (index >= 0) index else priority.size
-        }
     }
 
     private fun buildAbsoluteUrl(path: String): String {

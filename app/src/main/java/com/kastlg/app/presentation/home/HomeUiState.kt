@@ -32,4 +32,11 @@ data class HomeUiState(
     val hasContent: Boolean get() = trendingMovies.isNotEmpty() || nowPlayingMovies.isNotEmpty() ||
         topRatedMovies.isNotEmpty() || popularTvShows.isNotEmpty()
     val hasSearchResults: Boolean get() = searchResults.isNotEmpty() || searchTvResults.isNotEmpty() || flixcornResults.isNotEmpty()
+    val hasActiveSearchResults: Boolean
+        get() = when (selectedTab) {
+            HomeTab.Movies -> searchResults.isNotEmpty()
+            HomeTab.Series -> searchTvResults.isNotEmpty() || flixcornResults.isNotEmpty()
+        }
+    val isFlixcornSearchLoading: Boolean
+        get() = selectedTab == HomeTab.Series && flixcornSearchLoading
 }

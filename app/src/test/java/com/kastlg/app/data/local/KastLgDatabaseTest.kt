@@ -82,7 +82,7 @@ class KastLgDatabaseTest {
             .toggle(movie(550, "Fight Club"))
         RoomHistoryRepository(database.historyDao()) { 200L }
             .recordViewed(movie(550, "Fight Club"))
-        assertEquals(3, database.openHelper.readableDatabase.version)
+        assertEquals(8, database.openHelper.readableDatabase.version)
         database.close()
 
         database = Room.databaseBuilder(context, KastLgDatabase::class.java, databaseName)
@@ -128,7 +128,56 @@ class KastLgDatabaseTest {
         assertTrue(contentsV3.contains("\"version\": 3"))
         assertTrue(contentsV3.contains("\"sent_to_tv\""))
 
-        assertEquals(2, DatabaseMigrations.ALL.size)
+        assertEquals(7, DatabaseMigrations.ALL.size)
+    }
+
+    @Test
+    fun `fresh v7 database declares all three flixcorn indices`() {
+        val db = database.openHelper.readableDatabase
+        val indexNames = mutableSetOf<String>()
+        listOf("flixcorn_series", "flixcorn_episode_cache", "flixcorn_series_favorites")
+            .forEach { table ->
+                db.query("PRAGMA index_list(`$table`)").use { cursor ->
+                    while (cursor.moveToNext()) {
+                        indexNames += cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                    }
+                }
+            }
+        assertTrue(indexNames.contains("index_flixcorn_series_slug"))
+        assertTrue(indexNames.contains("index_flixcorn_episode_cache_episode_url"))
+        assertTrue(indexNames.contains("index_flixcorn_series_favorites_slug"))
+    }
+
+    @Test
+    fun `fresh v8 database creates watched tables and persists movie and episode rows`() = runTest {
+        val movieDao = database.watchedMovieDao()
+        val episodeDao = database.watchedEpisodeDao()
+
+        // Fresh install: both watched tables start empty.
+        assertFalse(movieDao.exists(1))
+        assertFalse(episodeDao.exists("breaking-bad", 1, 1))
+
+        // Movie rows are keyed by movieId and writable.
+        movieDao.upsert(WatchedMovieEntity(movieId = 1, watchedAt = 100L))
+        assertTrue(movieDao.exists(1))
+        assertFalse(movieDao.exists(2))
+
+        // Episode rows use the (slug, season, episode) composite key.
+        episodeDao.upsert(WatchedEpisodeEntity(slug = "breaking-bad", season = 1, episode = 1, watchedAt = 300L))
+        assertTrue(episodeDao.exists("breaking-bad", 1, 1))
+        assertFalse(episodeDao.exists("breaking-bad", 1, 2))
+        assertFalse(episodeDao.exists("breaking-bad", 2, 1))
+        assertFalse(episodeDao.exists("other-show", 1, 1))
+
+        // Toggle removes watched rows again.
+        movieDao.toggle(WatchedMovieEntity(movieId = 1, watchedAt = 100L))
+        assertFalse(movieDao.exists(1))
+        movieDao.toggle(WatchedMovieEntity(movieId = 1, watchedAt = 100L))
+        assertTrue(movieDao.exists(1))
+        episodeDao.toggle(WatchedEpisodeEntity(slug = "breaking-bad", season = 1, episode = 1, watchedAt = 300L))
+        assertFalse(episodeDao.exists("breaking-bad", 1, 1))
+        episodeDao.toggle(WatchedEpisodeEntity(slug = "breaking-bad", season = 1, episode = 1, watchedAt = 300L))
+        assertTrue(episodeDao.exists("breaking-bad", 1, 1))
     }
 
     private fun favorite(id: Int, title: String, timestamp: Long) = FavoriteEntity(

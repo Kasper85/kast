@@ -138,36 +138,36 @@ private fun HomeScreen(
             onQueryChange = onQueryChange,
         )
 
-        if (uiState.searchQuery.isBlank()) {
-            // Tab row
-            TabRow(
-                selectedTabIndex = HomeTab.entries.indexOf(uiState.selectedTab),
-                containerColor = Color.Transparent,
-                contentColor = KastLgColors.Accent,
-                indicator = { tabPositions ->
-                    if (tabPositions.isNotEmpty()) {
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[HomeTab.entries.indexOf(uiState.selectedTab)]),
-                            color = KastLgColors.Accent,
-                        )
-                    }
-                },
-                divider = {},
-            ) {
-                HomeTab.entries.forEach { tab ->
-                    Tab(
-                        selected = uiState.selectedTab == tab,
-                        onClick = { onTabSelected(tab) },
-                        text = {
-                            Text(
-                                text = tab.label,
-                                fontWeight = if (uiState.selectedTab == tab) FontWeight.Bold else FontWeight.Normal,
-                            )
-                        },
+        // Tab row (always visible so tabs can also scope search by media type)
+        TabRow(
+            selectedTabIndex = HomeTab.entries.indexOf(uiState.selectedTab),
+            containerColor = Color.Transparent,
+            contentColor = KastLgColors.Accent,
+            indicator = { tabPositions ->
+                if (tabPositions.isNotEmpty()) {
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[HomeTab.entries.indexOf(uiState.selectedTab)]),
+                        color = KastLgColors.Accent,
                     )
                 }
+            },
+            divider = {},
+        ) {
+            HomeTab.entries.forEach { tab ->
+                Tab(
+                    selected = uiState.selectedTab == tab,
+                    onClick = { onTabSelected(tab) },
+                    text = {
+                        Text(
+                            text = tab.label,
+                            fontWeight = if (uiState.selectedTab == tab) FontWeight.Bold else FontWeight.Normal,
+                        )
+                    },
+                )
             }
+        }
 
+        if (uiState.searchQuery.isBlank()) {
             // Genre chips
             if (uiState.selectedTab == HomeTab.Movies && uiState.movieGenres.isNotEmpty()) {
                 LazyRow(
@@ -588,7 +588,7 @@ private fun SearchResults(
     onFlixcornSeriesClick: (String) -> Unit,
     onConfigureToken: () -> Unit,
 ) {
-    if (uiState.isLoading && uiState.flixcornSearchLoading) {
+    if (uiState.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(
                 modifier = Modifier.semantics { contentDescription = "Cargando contenido" },
@@ -598,7 +598,7 @@ private fun SearchResults(
         return
     }
 
-    if (uiState.errorMessage != null && !uiState.hasSearchResults) {
+    if (uiState.errorMessage != null && !uiState.hasActiveSearchResults) {
         Column(
             modifier = Modifier.fillMaxSize().padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -613,7 +613,7 @@ private fun SearchResults(
         return
     }
 
-    if (!uiState.hasSearchResults && !uiState.flixcornSearchLoading) {
+    if (!uiState.hasActiveSearchResults && !uiState.isFlixcornSearchLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = "No se encontraron resultados",
@@ -629,48 +629,55 @@ private fun SearchResults(
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        if (uiState.searchResults.isNotEmpty()) {
-            item {
-                Text(
-                    text = "Pel\u00edculas",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
+        when (uiState.selectedTab) {
+            HomeTab.Movies -> {
+                // Movies tab: only movies
+                if (uiState.searchResults.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Películas",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    items(uiState.searchResults, key = { "movie_${it.id}" }) { movie ->
+                        SearchMovieItem(movie = movie, onClick = { onMovieClick(movie.id) })
+                    }
+                }
             }
-            items(uiState.searchResults, key = { "movie_${it.id}" }) { movie ->
-                SearchMovieItem(movie = movie, onClick = { onMovieClick(movie.id) })
+
+            HomeTab.Series -> {
+                // Series tab: only series (TMDB + Flixcorn)
+                if (uiState.searchTvResults.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Series",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    items(uiState.searchTvResults, key = { "tv_${it.id}" }) { tvShow ->
+                        SearchTvShowItem(tvShow = tvShow, onClick = { onTvShowClick(tvShow.id) })
+                    }
+                }
+
+                if (uiState.flixcornResults.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Flixcorn",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    items(uiState.flixcornResults, key = { "flix_${it.slug}" }) { result ->
+                        SearchFlixcornItem(result = result, onClick = { onFlixcornSeriesClick(result.slug) })
+                    }
+                }
             }
         }
 
-        if (uiState.searchTvResults.isNotEmpty()) {
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Series",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-            items(uiState.searchTvResults, key = { "tv_${it.id}" }) { tvShow ->
-                SearchTvShowItem(tvShow = tvShow, onClick = { onTvShowClick(tvShow.id) })
-            }
-        }
-
-        if (uiState.flixcornResults.isNotEmpty()) {
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Flixcorn",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-            items(uiState.flixcornResults, key = { "flix_${it.slug}" }) { result ->
-                SearchFlixcornItem(result = result, onClick = { onFlixcornSeriesClick(result.slug) })
-            }
-        }
-
-        if (uiState.flixcornSearchLoading && uiState.flixcornResults.isEmpty()) {
+        if (uiState.isFlixcornSearchLoading && uiState.flixcornResults.isEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(

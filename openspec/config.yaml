@@ -1,0 +1,64 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Android app (Kotlin 2.0.21, AGP 8.7.3, Gradle 8.9), single :app module,
+  Jetpack Compose Material3, minSdk 26 / targetSdk 35 / Java 17.
+  Architecture: layered MVVM — data/ (remote+local), domain/, presentation/, manual DI in di/.
+  Networking: Retrofit 3 + Gson + OkHttp 4 + jsoup (Flixcorn scraper); Room 2.7.2 (kapt) + DataStore; Coil3 images.
+  Testing: JUnit4 unit tests in app/src/test with MockWebServer, Robolectric, Room in-memory; no androidTest suite.
+  Style: official Kotlin code style; namespaces com.kastlg.app; English code identifiers.
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing layered structure (data/domain/presentation)
+      - Keep parser/scraper logic isolated and unit-tested
+    tdd: true
+    test_command: ./gradlew testDebugUnitTest
+  verify:
+    test_command: ./gradlew testDebugUnitTest
+    build_command: ./gradlew assembleDebug
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+testing:
+  strict_tdd: true
+  detected: 2026-08-13
+  runner:
+    command: ./gradlew testDebugUnitTest
+    framework: JUnit 4 (via Gradle)
+  layers:
+    unit:
+      available: true
+      tool: JUnit 4 + kotlinx-coroutines-test
+    integration:
+      available: true
+      tool: MockWebServer, Robolectric, Room in-memory
+    e2e:
+      available: false
+      tool: null
+  coverage:
+    available: false
+    command: null
+  quality:
+    linter:
+      available: true
+      command: ./gradlew lint
+    type_checker:
+      available: true
+      command: ./gradlew compileDebugKotlin
+    formatter:
+      available: false
+      command: null

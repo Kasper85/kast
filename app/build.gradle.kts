@@ -35,6 +35,7 @@ android {
 
         testOptions {
             unitTests.isReturnDefaultValues = true
+            unitTests.isIncludeAndroidResources = true
         }
     }
 
@@ -64,6 +65,16 @@ android {
 
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    }
+
+    sourceSets {
+        // Room MigrationTestHelper reads exported schema JSON (<canonicalName>/<version>.json)
+        // from the app's assets. Robolectric serves the debug variant's merged assets, and
+        // AGP ignores test.assets, so export the schemas into the debug assets. The release
+        // build is unaffected (schemas never reach production APKs).
+        getByName("debug") {
+            assets.srcDir("$projectDir/schemas")
+        }
     }
 }
 

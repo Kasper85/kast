@@ -21,6 +21,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
@@ -110,6 +112,7 @@ fun MovieDetailRoute(
                 else -> MovieDetailContent(
                     uiState = uiState,
                     onToggleFavorite = viewModel::toggleFavorite,
+                    onToggleWatched = viewModel::toggleWatched,
                     onWatchOnTv = onWatchOnTv,
                 )
             }
@@ -122,6 +125,7 @@ fun MovieDetailRoute(
 private fun MovieDetailContent(
     uiState: MovieDetailUiState,
     onToggleFavorite: () -> Unit,
+    onToggleWatched: () -> Unit,
     onWatchOnTv: () -> Unit,
 ) {
     Column(
@@ -298,6 +302,32 @@ private fun MovieDetailContent(
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
+
+        // Watched toggle (full width)
+        OutlinedButton(
+            onClick = onToggleWatched,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = if (uiState.isWatched) KastLgColors.Accent else KastLgColors.TextPrimary,
+            ),
+        ) {
+            Icon(
+                imageVector = if (uiState.isWatched) {
+                    Icons.Default.CheckCircle
+                } else {
+                    Icons.Default.CheckCircleOutline
+                },
+                contentDescription = if (uiState.isWatched) "Quitar de vistos" else "Marcar como visto",
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(if (uiState.isWatched) "Quitar de vistos" else "Marcar como visto")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Action buttons
         Row(

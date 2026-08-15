@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.kastlg.app.domain.repositories.FavoriteRepository
 import com.kastlg.app.domain.repositories.HistoryRepository
 import com.kastlg.app.domain.repositories.TvRepository
+import com.kastlg.app.domain.repositories.WatchedRepository
 import com.kastlg.app.domain.usecases.GetMovieDetailUseCase
 
 class MovieDetailViewModelFactory(
@@ -13,6 +14,7 @@ class MovieDetailViewModelFactory(
     private val favoriteRepository: FavoriteRepository,
     private val historyRepository: HistoryRepository,
     private val tvRepository: TvRepository,
+    private val watchedRepository: WatchedRepository,
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -23,6 +25,7 @@ class MovieDetailViewModelFactory(
             favoriteRepository = favoriteRepository,
             historyRepository = historyRepository,
             tvRepository = tvRepository,
+            watchedRepository = watchedRepository,
         ) as T
     }
 }

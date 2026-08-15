@@ -7,6 +7,7 @@ import com.kastlg.app.data.local.FavoriteDao
 import com.kastlg.app.data.local.FavoriteEntity
 import com.kastlg.app.data.local.KastLgDatabase
 import com.kastlg.app.domain.models.MovieDetail
+import com.kastlg.app.domain.models.TvShowDetail
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -115,6 +116,22 @@ class RoomFavoriteRepositoryTest {
         }
     }
 
+    @Test
+    fun `series favorite toggles and persists through shared favorites table`() = runTest {
+        var timestamp = 100L
+        val repository = RoomFavoriteRepository(database.favoriteDao()) { timestamp }
+
+        repository.toggleTvShow(tvShow(666, "Breaking Bad"))
+
+        assertTrue(repository.observeIsFavorite(666).first())
+        val favorites = repository.observeFavorites().first()
+        assertEquals(listOf(666), favorites.map { it.tmdbId })
+        assertEquals("Breaking Bad", favorites.first().title)
+
+        repository.toggleTvShow(tvShow(666, "Breaking Bad"))
+        assertFalse(repository.observeIsFavorite(666).first())
+    }
+
     private fun movie(id: Int, title: String) = MovieDetail(
         id = id,
         title = title,
@@ -123,5 +140,19 @@ class RoomFavoriteRepositoryTest {
         releaseDate = "",
         voteAverage = 0.0,
         genres = emptyList(),
+    )
+
+    private fun tvShow(id: Int, title: String) = TvShowDetail(
+        id = id,
+        title = title,
+        posterUrl = null,
+        backdropUrl = null,
+        overview = "Synopsis",
+        releaseDate = "2008-01-20",
+        voteAverage = 9.2,
+        genres = emptyList(),
+        numberOfSeasons = 5,
+        numberOfEpisodes = 62,
+        status = "Ended",
     )
 }

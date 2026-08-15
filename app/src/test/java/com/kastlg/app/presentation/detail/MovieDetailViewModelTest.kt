@@ -15,12 +15,14 @@ import com.kastlg.app.domain.repositories.HistoryRepository
 import com.kastlg.app.domain.repositories.MissingTmdbTokenException
 import com.kastlg.app.domain.repositories.MovieRepository
 import com.kastlg.app.domain.repositories.TvRepository
+import com.kastlg.app.domain.repositories.WatchedRepository
 import com.kastlg.app.domain.usecases.GetMovieDetailUseCase
 import java.io.IOException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
@@ -303,12 +305,56 @@ class MovieDetailViewModelTest {
         assertNull(viewModel.uiState.value.tvSuccessMessage)
     }
 
+    @Test
+    fun `isWatched observes movie watched state`() = runTest {
+        val watchedRepository = FakeWatchedRepository()
+        val viewModel = createViewModel(
+            movieId = 550,
+            repository = FakeDetailRepository(),
+            watchedRepository = watchedRepository,
+        )
+        runCurrent()
+
+        assertFalse(viewModel.uiState.value.isWatched)
+
+        watchedRepository.setMovieWatched(550, watched = true)
+        runCurrent()
+        assertTrue(viewModel.uiState.value.isWatched)
+
+        watchedRepository.setMovieWatched(550, watched = false)
+        runCurrent()
+        assertFalse(viewModel.uiState.value.isWatched)
+    }
+
+    @Test
+    fun `toggleWatched flips movie watched state`() = runTest {
+        val watchedRepository = FakeWatchedRepository()
+        val viewModel = createViewModel(
+            movieId = 550,
+            repository = FakeDetailRepository(),
+            watchedRepository = watchedRepository,
+        )
+        runCurrent()
+
+        assertFalse(viewModel.uiState.value.isWatched)
+
+        viewModel.toggleWatched()
+        runCurrent()
+        assertTrue(viewModel.uiState.value.isWatched)
+        assertEquals(550, watchedRepository.lastToggledMovieId)
+
+        viewModel.toggleWatched()
+        runCurrent()
+        assertFalse(viewModel.uiState.value.isWatched)
+    }
+
     private fun createViewModel(
         movieId: Int,
         repository: MovieRepository,
         favoriteRepository: FavoriteRepository = FakeFavoriteRepository(),
         historyRepository: HistoryRepository = FakeHistoryRepository(),
         tvRepository: TvRepository = FakeTvRepository(),
+        watchedRepository: WatchedRepository = FakeWatchedRepository(),
     ) =
         MovieDetailViewModel(
             movieId = movieId,
@@ -316,6 +362,7 @@ class MovieDetailViewModelTest {
             favoriteRepository = favoriteRepository,
             historyRepository = historyRepository,
             tvRepository = tvRepository,
+            watchedRepository = watchedRepository,
         )
 
     private class FakeFavoriteRepository(
@@ -369,6 +416,32 @@ class MovieDetailViewModelTest {
         override suspend fun recordSentToTv(movie: MovieDetail) {
             if (failRecord) throw IOException("History write failed")
             recordedMovieIds += movie.id
+        }
+    }
+
+    private class FakeWatchedRepository : WatchedRepository {
+        private val movieStates = MutableStateFlow<Map<Int, Boolean>>(emptyMap())
+        var lastToggledMovieId: Int? = null
+
+        override fun observeIsMovieWatched(movieId: Int): Flow<Boolean> =
+            movieStates.map { it[movieId] ?: false }
+
+        override fun observeIsEpisodeWatched(slug: String, season: Int, episode: Int): Flow<Boolean> =
+            flowOf(false)
+
+        override suspend fun toggleMovie(movieId: Int) {
+            lastToggledMovieId = movieId
+            movieStates.value = movieStates.value.toMutableMap().apply {
+                put(movieId, !(get(movieId) ?: false))
+            }
+        }
+
+        override suspend fun toggleEpisode(slug: String, season: Int, episode: Int) = Unit
+
+        fun setMovieWatched(movieId: Int, watched: Boolean) {
+            movieStates.value = movieStates.value.toMutableMap().apply {
+                if (watched) put(movieId, true) else remove(movieId)
+            }
         }
     }
 
@@ -434,8 +507,7 @@ class MovieDetailViewModelTest {
 
     private class FlippyFavoriteRepository(
         var startFailing: Boolean = false,
-    ) : FavoriteRepository {
-        private val favorites = MutableStateFlow<Map<Int, MovieDetail>>(emptyMap())
+    ) : FavoriteRepository {        private val favorites = MutableStateFlow<Map<Int, MovieDetail>>(emptyMap())
 
         override fun observeFavorites(): Flow<List<FavoriteMovie>> = favorites.map { values ->
             values.values.map {

@@ -9,6 +9,7 @@ import com.kastlg.app.data.remote.flixcorn.FlixcornScraper
 import com.kastlg.app.data.repository.FlixcornRepositoryImpl
 import com.kastlg.app.data.repository.RoomFavoriteRepository
 import com.kastlg.app.data.repository.RoomHistoryRepository
+import com.kastlg.app.data.repository.RoomWatchedRepository
 import com.kastlg.app.data.repository.WebOsTvRepository
 import com.kastlg.app.data.tv.SsapClient
 import com.kastlg.app.domain.repositories.FlixcornRepository
@@ -25,6 +26,7 @@ import com.kastlg.app.domain.usecases.GetTrendingMoviesUseCase
 import com.kastlg.app.domain.usecases.GetTvGenresUseCase
 import com.kastlg.app.domain.usecases.GetTvSeasonUseCase
 import com.kastlg.app.domain.usecases.GetTvShowDetailUseCase
+import com.kastlg.app.domain.usecases.ResolveFlixcornSeriesSlugUseCase
 import com.kastlg.app.domain.usecases.SearchFlixcornUseCase
 import com.kastlg.app.domain.usecases.SearchMoviesUseCase
 import com.kastlg.app.domain.usecases.SearchTvShowsUseCase
@@ -51,6 +53,10 @@ object AppContainer {
 
     val favoriteRepository by lazy {
         RoomFavoriteRepository(database.favoriteDao())
+    }
+
+    val watchedRepository by lazy {
+        RoomWatchedRepository(database.watchedMovieDao(), database.watchedEpisodeDao())
     }
 
     val historyRepository by lazy {
@@ -81,6 +87,7 @@ object AppContainer {
     val getFlixcornSeriesDetail by lazy { GetFlixcornSeriesDetail(flixcornRepository) }
     val getFlixcornEpisodeServers by lazy { GetFlixcornEpisodeServers(flixcornRepository) }
     val sendFlixcornToTv by lazy { SendFlixcornToTvUseCase(flixcornRepository) }
+    val resolveFlixcornSeriesSlug by lazy { ResolveFlixcornSeriesSlugUseCase(flixcornRepository) }
 
     private val _hasToken = MutableStateFlow(false)
     val hasToken: StateFlow<Boolean> = _hasToken

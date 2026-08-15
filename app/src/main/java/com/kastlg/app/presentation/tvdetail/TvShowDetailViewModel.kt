@@ -2,16 +2,21 @@ package com.kastlg.app.presentation.tvdetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kastlg.app.data.tv.PlaybackUrlBuilder
+import com.kastlg.app.data.remote.flixcorn.FlixcornResult
 import com.kastlg.app.domain.models.Episode
+import com.kastlg.app.domain.models.TvShowDetail
+import com.kastlg.app.domain.repositories.FavoriteRepository
 import com.kastlg.app.domain.repositories.MissingTmdbTokenException
-import com.kastlg.app.domain.repositories.TvRepository
 import com.kastlg.app.domain.usecases.GetTvSeasonUseCase
 import com.kastlg.app.domain.usecases.GetTvShowDetailUseCase
+import com.kastlg.app.domain.usecases.ResolveFlixcornSeriesSlugUseCase
 import java.io.IOException
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -20,17 +25,47 @@ class TvShowDetailViewModel(
     private val tvShowId: Int,
     private val getTvShowDetail: GetTvShowDetailUseCase,
     private val getTvSeason: GetTvSeasonUseCase,
-    private val tvRepository: TvRepository,
+    private val favoriteRepository: FavoriteRepository,
+    private val resolveFlixcornSeriesSlug: ResolveFlixcornSeriesSlugUseCase,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(TvShowDetailUiState())
     val uiState: StateFlow<TvShowDetailUiState> = mutableUiState
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent
+    private var loadedDetail: TvShowDetail? = null
 
     init {
+        observeFavorite()
         loadDetail()
     }
 
     fun retry() {
         loadDetail()
+    }
+
+    fun toggleFavorite() {
+        val detail = loadedDetail ?: return
+        viewModelScope.launch {
+            try {
+                favoriteRepository.toggleTvShow(detail)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Throwable) {
+                // Favorite state is driven reactively from observeFavorite(); ignore persistence errors.
+            }
+        }
+    }
+
+    private fun observeFavorite() {
+        viewModelScope.launch {
+            favoriteRepository.observeIsFavorite(tvShowId)
+                .catch { error ->
+                    if (error is CancellationException) throw error
+                }
+                .collect { isFavorite ->
+                    mutableUiState.update { it.copy(isFavorite = isFavorite) }
+                }
+        }
     }
 
     fun selectSeason(seasonNumber: Int) {
@@ -54,49 +89,55 @@ class TvShowDetailViewModel(
     }
 
     fun selectEpisode(episode: Episode) {
-        mutableUiState.update { it.copy(selectedEpisode = episode) }
+        mutableUiState.update { it.copy(selectedEpisode = episode, episodeNotice = null) }
+        resolveEpisode(episode)
     }
 
-    fun watchOnTv() {
-        val state = mutableUiState.value
-        val episode = state.selectedEpisode
+    private fun resolveEpisode(episode: Episode) {
         viewModelScope.launch {
-            mutableUiState.update { it.copy(tvErrorMessage = null, tvSuccessMessage = null) }
-
-            val config = tvRepository.getConfig()
-            if (config == null || !config.isPaired) {
-                mutableUiState.update {
-                    it.copy(tvErrorMessage = "Configura tu TV primero")
+            mutableUiState.update { it.copy(isResolvingEpisode = true) }
+            when (val result = resolveFlixcornSeriesSlug(seriesTitle())) {
+                is FlixcornResult.Success -> {
+                    val slug = result.data
+                    if (slug != null) {
+                        mutableUiState.update { it.copy(isResolvingEpisode = false) }
+                        _navigationEvent.emit(
+                            NavigationEvent.NavigateToFlixcornEpisode(
+                                slug = slug,
+                                season = episode.seasonNumber,
+                                episode = episode.episodeNumber,
+                            ),
+                        )
+                    } else {
+                        mutableUiState.update {
+                            it.copy(
+                                isResolvingEpisode = false,
+                                episodeNotice = "Este episodio no se encontró en Flixcorn.",
+                            )
+                        }
+                    }
                 }
-                return@launch
-            }
-
-            val url = if (episode != null) {
-                PlaybackUrlBuilder.buildTvUrl(tvShowId, episode.seasonNumber, episode.episodeNumber)
-            } else {
-                PlaybackUrlBuilder.buildTvUrl(tvShowId)
-            }
-            val result = tvRepository.openUrl(url)
-            result.fold(
-                onSuccess = {
+                is FlixcornResult.Error -> {
                     mutableUiState.update {
-                        it.copy(tvSuccessMessage = "Enviado a la TV")
+                        it.copy(
+                            isResolvingEpisode = false,
+                            episodeNotice = "No se pudo buscar la serie en Flixcorn. Intenta de nuevo.",
+                        )
                     }
-                },
-                onFailure = { error ->
-                    mutableUiState.update {
-                        it.copy(tvErrorMessage = error.message ?: "No se pudo abrir en la TV")
-                    }
-                },
-            )
+                }
+                is FlixcornResult.Loading -> Unit
+            }
         }
     }
+
+    private fun seriesTitle(): String = loadedDetail?.title ?: mutableUiState.value.title
 
     private fun loadDetail() {
         viewModelScope.launch {
             mutableUiState.update { it.copy(isLoading = true, errorMessage = null) }
             runCatching { getTvShowDetail(tvShowId) }
                 .onSuccess { detail ->
+                    loadedDetail = detail
                     mutableUiState.update {
                         it.copy(
                             isLoading = false,
@@ -136,5 +177,13 @@ class TvShowDetailViewModel(
             else -> "TMDB devolvió un error (${code()}). Intenta de nuevo en breve."
         }
         else -> "No se pudieron cargar los detalles. Intenta de nuevo."
+    }
+
+    sealed class NavigationEvent {
+        data class NavigateToFlixcornEpisode(
+            val slug: String,
+            val season: Int,
+            val episode: Int,
+        ) : NavigationEvent()
     }
 }

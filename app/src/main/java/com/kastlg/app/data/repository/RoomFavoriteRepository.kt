@@ -4,6 +4,7 @@ import com.kastlg.app.data.local.FavoriteDao
 import com.kastlg.app.data.local.FavoriteEntity
 import com.kastlg.app.domain.models.FavoriteMovie
 import com.kastlg.app.domain.models.MovieDetail
+import com.kastlg.app.domain.models.TvShowDetail
 import com.kastlg.app.domain.repositories.FavoriteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,7 +27,23 @@ class RoomFavoriteRepository(
             dao.toggle(movie.toFavoriteEntity(now()))
         }
     }
+
+    override suspend fun toggleTvShow(tvShow: TvShowDetail) {
+        toggleMutex.withLock {
+            dao.toggle(tvShow.toFavoriteEntity(now()))
+        }
+    }
 }
+
+private fun TvShowDetail.toFavoriteEntity(favoritedAt: Long): FavoriteEntity = FavoriteEntity(
+    tmdbId = id,
+    title = title,
+    posterUrl = posterUrl,
+    overview = overview,
+    releaseDate = releaseDate,
+    voteAverage = voteAverage,
+    favoritedAt = favoritedAt,
+)
 
 private fun FavoriteEntity.toDomain(): FavoriteMovie = FavoriteMovie(
     tmdbId = tmdbId,

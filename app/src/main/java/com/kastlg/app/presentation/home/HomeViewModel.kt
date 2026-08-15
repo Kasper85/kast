@@ -73,6 +73,15 @@ class HomeViewModel(
 
     fun onTabSelected(tab: HomeTab) {
         mutableUiState.update { it.copy(selectedTab = tab) }
+        val query = mutableUiState.value.searchQuery
+        if (query.isNotBlank()) {
+            // Re-run a tab-scoped search when switching tabs during an active search.
+            searchJob?.cancel()
+            categoryJob?.cancel()
+            searchJob = viewModelScope.launch {
+                search(query)
+            }
+        }
     }
 
     fun onMovieGenreSelected(genreId: Int?) {
@@ -185,6 +194,7 @@ class HomeViewModel(
 
     private fun search(query: String) {
         viewModelScope.launch {
+            val tab = mutableUiState.value.selectedTab
             mutableUiState.update {
                 it.copy(
                     isLoading = true,
@@ -193,29 +203,42 @@ class HomeViewModel(
                     topRatedMovies = emptyList(),
                     popularTvShows = emptyList(),
                     errorMessage = null,
+                    searchResults = emptyList(),
+                    searchTvResults = emptyList(),
                     flixcornResults = emptyList(),
-                    flixcornSearchLoading = true,
+                    flixcornSearchLoading = tab == HomeTab.Series,
                 )
             }
 
             try {
-                val movies = async { searchMovies(query) }
-                val tvShows = async { searchTvShows(query) }
-                val flixcorn = async {
-                    when (val result = searchFlixcorn(query)) {
-                        is FlixcornResult.Success -> result.data
-                        else -> emptyList()
+                when (tab) {
+                    HomeTab.Movies -> {
+                        val movies = async { searchMovies(query) }
+                        mutableUiState.update {
+                            it.copy(
+                                searchResults = movies.await(),
+                                isLoading = false,
+                                flixcornSearchLoading = false,
+                            )
+                        }
                     }
-                }
-
-                mutableUiState.update {
-                    it.copy(
-                        searchResults = movies.await(),
-                        searchTvResults = tvShows.await(),
-                        flixcornResults = flixcorn.await(),
-                        isLoading = false,
-                        flixcornSearchLoading = false,
-                    )
+                    HomeTab.Series -> {
+                        val tvShows = async { searchTvShows(query) }
+                        val flixcorn = async {
+                            when (val result = searchFlixcorn(query)) {
+                                is FlixcornResult.Success -> result.data
+                                else -> emptyList()
+                            }
+                        }
+                        mutableUiState.update {
+                            it.copy(
+                                searchTvResults = tvShows.await(),
+                                flixcornResults = flixcorn.await(),
+                                isLoading = false,
+                                flixcornSearchLoading = false,
+                            )
+                        }
+                    }
                 }
             } catch (e: CancellationException) {
                 throw e

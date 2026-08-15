@@ -2,9 +2,13 @@ package com.kastlg.app.data.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "flixcorn_episode_cache")
+@Entity(
+    tableName = "flixcorn_episode_cache",
+    indices = [Index(value = ["episode_url"], unique = true)],
+)
 data class FlixcornEpisodeCacheEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
